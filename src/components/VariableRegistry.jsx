@@ -4,12 +4,19 @@ import { useWorkflow } from "../context/WorkflowContext";
 /**
  * A component that displays a table of all global variables in the workflow,
  * including where they are created and used. It allows filtering and interaction.
- * All elements are aligned to the top (align-top & items-start).
  * @returns {JSX.Element | null} The rendered VariableRegistry component or null if no data is available.
  */
 const VariableRegistry = () => {
-  const { workflowData, activeVar, searchTerm, onSelectVar, onNodeClick, t } =
-    useWorkflow();
+  const {
+    workflowData,
+    activeVar,
+    searchTerm,
+    onSelectVar,
+    onNodeClick,
+    t,
+    variableFilter,
+    setVariableFilter,
+  } = useWorkflow();
 
   if (!workflowData) {
     return null;
@@ -17,16 +24,38 @@ const VariableRegistry = () => {
 
   const { globalVars, stepNames } = workflowData;
   const varsArray = Object.entries(globalVars);
-  const filteredVars = varsArray.filter(([name]) =>
-    name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
 
-  /**
-   * Renders a set of step tiles for either 'created' or 'used' contexts.
-   * @param {string[]} stepIds - Array of step IDs.
-   * @param {'created' | 'used'} typeClass - The context type to determine styling.
-   * @returns {JSX.Element} A list of styled, clickable step tiles.
-   */
+  const getFilteredVars = () => {
+    let baseList = varsArray;
+
+    if (variableFilter === "unused") {
+      baseList = varsArray.filter(([, info]) => {
+        return (
+          (info.createdIn.length > 0 || info.isFlowInput) &&
+          info.usedIn.length === 0
+        );
+      });
+    } else if (variableFilter === "undefined") {
+      baseList = varsArray.filter(([, info]) => {
+        return (
+          info.usedIn.length > 0 &&
+          info.createdIn.length === 0 &&
+          !info.isFlowInput
+        );
+      });
+    }
+
+    if (searchTerm) {
+      return baseList.filter(([name]) =>
+        name.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
+    }
+
+    return baseList;
+  };
+
+  const filteredVars = getFilteredVars();
+
   const renderStepTiles = (stepIds, typeClass) => {
     if (!stepIds || stepIds.length === 0)
       return <span className="text-slate-400 text-xs">-</span>;
@@ -61,13 +90,24 @@ const VariableRegistry = () => {
 
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm flex flex-col">
-      <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3 mb-3">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+      <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3 mb-3 gap-4">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 shrink-0">
           {t.registryTitle}
         </h3>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-600 text-white">
-          {filteredVars.length} {t.variablesCount}
-        </span>
+        <div className="flex items-center gap-2">
+          <select
+            value={variableFilter}
+            onChange={(e) => setVariableFilter(e.target.value)}
+            className="h-9 px-3 rounded-lg bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+          >
+            <option value="all">{t.registryFilterShowAll}</option>
+            <option value="unused">{t.registryFilterUnused}</option>
+            <option value="undefined">{t.registryFilterUndefined}</option>
+          </select>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-600 text-white">
+            {filteredVars.length}
+          </span>
+        </div>
       </div>
       <div className="max-h-72 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-lg">
         <table className="w-full text-xs border-collapse table-fixed">
@@ -85,30 +125,27 @@ const VariableRegistry = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-            {filteredVars.map(([name, info]) => {
-              const isActive = activeVar === name;
-              return (
-                <tr
-                  key={name}
-                  className={`cursor-pointer transition-colors ${
-                    isActive
-                      ? "bg-blue-50 dark:bg-blue-950/50 border-l-4 border-l-blue-600"
-                      : "hover:bg-slate-50 dark:hover:bg-slate-700/40"
-                  }`}
-                  onClick={() => onSelectVar(name, true)}
-                >
-                  <td className="p-2.5 align-top font-bold font-mono text-amber-600 dark:text-amber-400 break-words hover:underline">
-                    <code>{name}</code>
-                  </td>
-                  <td className="p-2.5 align-top">
-                    {renderStepTiles(info.createdIn, "created")}
-                  </td>
-                  <td className="p-2.5 align-top">
-                    {renderStepTiles(info.usedIn, "used")}
-                  </td>
-                </tr>
-              );
-            })}
+            {filteredVars.map(([name, info]) => (
+              <tr
+                key={name}
+                className={`cursor-pointer transition-colors ${
+                  activeVar === name
+                    ? "bg-blue-50 dark:bg-blue-950/50 border-l-4 border-l-blue-600"
+                    : "hover:bg-slate-50 dark:hover:bg-slate-700/40"
+                }`}
+                onClick={() => onSelectVar(name, true)}
+              >
+                <td className="p-2.5 align-top font-bold font-mono text-amber-600 dark:text-amber-400 break-words hover:underline">
+                  <code>{name}</code>
+                </td>
+                <td className="p-2.5 align-top">
+                  {renderStepTiles(info.createdIn, "created")}
+                </td>
+                <td className="p-2.5 align-top">
+                  {renderStepTiles(info.usedIn, "used")}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

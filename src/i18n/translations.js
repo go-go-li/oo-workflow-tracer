@@ -8,6 +8,9 @@
  * @property {string} searchDesc
  * @property {string} searchPlaceholder
  * @property {string} registryTitle
+ * @property {string} registryFilterShowAll
+ * @property {string} registryFilterUnused
+ * @property {string} registryFilterUndefined
  * @property {string} registryColVar
  * @property {string} registryColCreated
  * @property {string} registryColUsed
@@ -52,6 +55,9 @@ export const i18n = {
 
     // VERZEICHNIS (REGISTRY)
     registryTitle: "Globales Variablenverzeichnis",
+    registryFilterShowAll: "Alle Variablen",
+    registryFilterUnused: "Nur Ungenutzte",
+    registryFilterUndefined: "Nur Nicht-Definierte",
     registryColVar: "Variable",
     registryColCreated: "Erstellt in",
     registryColUsed: "Verwendet in",
@@ -96,6 +102,9 @@ export const i18n = {
 
     // REGISTRY
     registryTitle: "Global Variable Directory",
+    registryFilterShowAll: "All Variables",
+    registryFilterUnused: "Unused Only",
+    registryFilterUndefined: "Undefined Only",
     registryColVar: "Variable",
     registryColCreated: "Created In",
     registryColUsed: "Used In",

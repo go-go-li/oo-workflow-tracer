@@ -3,6 +3,10 @@ import { parseXMLWorkflow } from "../utils/ooParser";
 import { i18n } from "../i18n/translations";
 
 /**
+ * @typedef {'all' | 'unused' | 'undefined'} VariableFilterType
+ */
+
+/**
  * @typedef {object} WorkflowDataHook
  * @property {string} lang - The current language ('de' or 'en').
  * @property {object} t - The translation object for the current language.
@@ -11,12 +15,14 @@ import { i18n } from "../i18n/translations";
  * @property {string} searchTerm - The current search term from the input field.
  * @property {string|null} highlightedStepId - The ID of the step to be highlighted.
  * @property {Array<object>} visibleSteps - The steps to be displayed, filtered by the search term.
+ * @property {VariableFilterType} variableFilter - The current filter for the variable registry.
  * @property {(file: File) => void} handleFileUpload - Function to process an uploaded file.
  * @property {(varName: string, exact: boolean) => void} onSelectVar - Function to handle variable selection.
  * @property {() => void} onClear - Function to clear the current search and selection.
  * @property {(e: React.MouseEvent, targetId: string) => void} onNodeClick - Function to handle clicks on step nodes/links.
  * @property {() => void} toggleLang - Function to toggle the language.
  * @property {() => void} resetWorkflow - Function to reset the application to its initial state.
+ * @property {(filter: VariableFilterType) => void} setVariableFilter - Function to set the variable filter.
  */
 
 /**
@@ -31,6 +37,7 @@ export const useWorkflowData = () => {
   const [activeVar, setActiveVar] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [highlightedStepId, setHighlightedStepId] = useState(null);
+  const [variableFilter, setVariableFilter] = useState("all");
 
   const t = i18n[lang];
 
@@ -44,6 +51,7 @@ export const useWorkflowData = () => {
           setActiveVar(null);
           setSearchTerm("");
           setHighlightedStepId(null);
+          setVariableFilter("all");
         } catch (error) {
           console.error("Fehler beim Parsen der XML-Datei:", error);
           alert(
@@ -71,9 +79,6 @@ export const useWorkflowData = () => {
     setHighlightedStepId(null);
   }, []);
 
-  /**
-   * Resets the entire workflow state, allowing a new file to be uploaded.
-   */
   const resetWorkflow = useCallback(() => {
     setWorkflowData(null);
     onClear();
@@ -117,11 +122,13 @@ export const useWorkflowData = () => {
     searchTerm,
     highlightedStepId,
     visibleSteps,
+    variableFilter,
     handleFileUpload,
     onSelectVar,
     onClear,
     onNodeClick,
     toggleLang,
     resetWorkflow,
+    setVariableFilter,
   };
 };
