@@ -12,6 +12,7 @@ import { i18n } from "../i18n/translations";
  * @property {string|null} highlightedStepId - The ID of the step to be highlighted.
  * @property {Array<object>} visibleSteps - The steps to be displayed, filtered by the search term.
  * @property {(file: File) => void} handleFileUpload - Function to process an uploaded file.
+ * @property {() => void} handleRefresh - Function to re-process the current file.
  * @property {(varName: string, exact: boolean) => void} onSelectVar - Function to handle variable selection.
  * @property {() => void} onClear - Function to clear the current search and selection.
  * @property {(e: React.MouseEvent, targetId: string) => void} onNodeClick - Function to handle clicks on step nodes/links.
@@ -31,29 +32,51 @@ export const useWorkflowData = () => {
   const [activeVar, setActiveVar] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [highlightedStepId, setHighlightedStepId] = useState(null);
+  const [sourceFile, setSourceFile] = useState(null); // Store the uploaded file
 
   const t = i18n[lang];
 
+  /**
+   * Processes the text content of a workflow file.
+   * @param {string} text - The XML content as a string.
+   */
+  const processWorkflowText = (text) => {
+    try {
+      const parsed = parseXMLWorkflow(text);
+      setWorkflowData(parsed);
+    } catch (error) {
+      console.error("Fehler beim Parsen der XML-Datei:", error);
+      alert(
+        "Die XML-Datei konnte nicht verarbeitet werden. Bitte prüfen Sie die Konsole für Details.",
+      );
+    }
+  };
+
   const handleFileUpload = useCallback((file) => {
     if (file) {
+      setSourceFile(file); // Save the file object
       const reader = new FileReader();
       reader.onload = (event) => {
-        try {
-          const parsed = parseXMLWorkflow(event.target.result);
-          setWorkflowData(parsed);
-          setActiveVar(null);
-          setSearchTerm("");
-          setHighlightedStepId(null);
-        } catch (error) {
-          console.error("Fehler beim Parsen der XML-Datei:", error);
-          alert(
-            "Die XML-Datei konnte nicht verarbeitet werden. Bitte prüfen Sie die Konsole für Details.",
-          );
-        }
+        processWorkflowText(event.target.result);
+        // Reset state on new file upload
+        setActiveVar(null);
+        setSearchTerm("");
+        setHighlightedStepId(null);
       };
       reader.readAsText(file);
     }
   }, []);
+
+  const handleRefresh = useCallback(() => {
+    if (sourceFile) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        // Only update workflow data, keep filters
+        processWorkflowText(event.target.result);
+      };
+      reader.readAsText(sourceFile);
+    }
+  }, [sourceFile]);
 
   const onSelectVar = useCallback((varName, exact = true) => {
     setSearchTerm(varName);
@@ -76,6 +99,7 @@ export const useWorkflowData = () => {
    */
   const resetWorkflow = useCallback(() => {
     setWorkflowData(null);
+    setSourceFile(null);
     onClear();
   }, [onClear]);
 
@@ -118,6 +142,7 @@ export const useWorkflowData = () => {
     highlightedStepId,
     visibleSteps,
     handleFileUpload,
+    handleRefresh,
     onSelectVar,
     onClear,
     onNodeClick,

@@ -3,6 +3,7 @@
  * @property {string} title
  * @property {string} dropZone
  * @property {string} themeToggleTooltip
+ * @property {string} refreshWorkflow
  * @property {string} loadAnotherWorkflow
  * @property {string} searchTitle
  * @property {string} searchDesc
@@ -42,6 +43,7 @@ export const i18n = {
     title: "OO Workflow Variable Tracer",
     dropZone: "XML-Workflow-Datei hierher ziehen oder anklicken, um zu laden",
     themeToggleTooltip: "Theme wechseln (Hell/Dunkel)",
+    refreshWorkflow: "Workflow neu laden",
     loadAnotherWorkflow: "Anderen Workflow laden",
 
     // SUCHE
@@ -86,6 +88,7 @@ export const i18n = {
     title: "OO Workflow Variable Tracer",
     dropZone: "Drag & drop XML workflow file here or click to browse",
     themeToggleTooltip: "Toggle Theme (Light/Dark)",
+    refreshWorkflow: "Refresh Workflow",
     loadAnotherWorkflow: "Load Another Workflow",
 
     // SEARCH
