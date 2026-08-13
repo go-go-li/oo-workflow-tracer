@@ -8,19 +8,56 @@ import FileDropZone from "./components/FileDropZone";
 
 /**
  * The main dashboard for displaying workflow details.
- * If no workflow data is loaded, it shows the FileDropZone.
- * Otherwise, it displays the variable search, registry, and step details.
+ * If no workflow data is loaded, it shows the FileDropZone and an introductory text box.
+ * Otherwise, it displays the variable search, registry, step details, and contains a hidden
+ * file input for immediate workflow swapping.
  * @returns {JSX.Element} The rendered WorkflowDashboard component.
  */
 const WorkflowDashboard = () => {
-  const { workflowData, visibleSteps, t } = useWorkflow();
+  const { workflowData, visibleSteps, handleFileUpload, t } = useWorkflow();
+
+  /**
+   * Handles direct file input change from the hidden file selector.
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The change event from file input.
+   */
+  const onFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      handleFileUpload(file);
+    }
+  };
 
   if (!workflowData) {
-    return <FileDropZone />;
+    return (
+      <div className="space-y-6">
+        {/* Short introduction box explaining what the tool is for */}
+        <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-xl p-5 text-center">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">
+            {t.welcomeTitle}
+          </h3>
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+            {t.welcomeDesc}
+          </p>
+        </div>
+        <FileDropZone />
+      </div>
+    );
   }
 
   return (
     <div id="result-area" className="space-y-6 min-w-0 w-full overflow-hidden">
+      {/* 
+        Hidden file input element used when workflow data is loaded. 
+        It allows the "Anderen Workflow laden" button to instantly prompt the file explorer.
+      */}
+      <input
+        type="file"
+        id="file-input"
+        className="sr-only"
+        accept=".xml"
+        onChange={onFileChange}
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-w-0">
         <VariableSearch />
         <VariableRegistry />
@@ -72,15 +109,28 @@ const WorkflowDashboard = () => {
 /**
  * The application header component.
  * Contains the main title and action buttons like theme and language toggles.
+ * Hovering and clicking the title resets the view back to the start page.
  * @returns {JSX.Element} The rendered AppHeader component.
  */
 const AppHeader = () => {
-  const { t, toggleLang, lang, workflowData, resetWorkflow, handleRefresh } =
-    useWorkflow();
+  const {
+    t,
+    toggleLang,
+    lang,
+    workflowData,
+    resetWorkflow,
+    handleRefresh,
+    loadAnotherWorkflow,
+  } = useWorkflow();
 
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-6 border-b border-slate-200 dark:border-slate-700 gap-4 min-w-0 w-full">
-      <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 break-all [overflow-wrap:anywhere] min-w-0">
+      {/* Clickable Title returning to home view */}
+      <h2
+        onClick={resetWorkflow}
+        className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 break-all [overflow-wrap:anywhere] min-w-0 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors select-none"
+        title={t.homeTooltip}
+      >
         {t.title}
       </h2>
       <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
@@ -94,7 +144,7 @@ const AppHeader = () => {
               🔃
             </button>
             <button
-              onClick={resetWorkflow}
+              onClick={loadAnotherWorkflow}
               className="h-9 px-3 rounded-lg bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 transition-all text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer shrink-0"
               title={t.loadAnotherWorkflow}
             >

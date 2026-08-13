@@ -1,6 +1,9 @@
 /**
  * @typedef {object} TranslationKeys
  * @property {string} title
+ * @property {string} welcomeTitle
+ * @property {string} welcomeDesc
+ * @property {string} homeTooltip
  * @property {string} dropZone
  * @property {string} themeToggleTooltip
  * @property {string} refreshWorkflow
@@ -41,6 +44,10 @@ export const i18n = {
   de: {
     // ALLGEMEIN
     title: "OO Workflow Variable Tracer",
+    welcomeTitle: "Willkommen beim OO Workflow Variable Tracer!",
+    welcomeDesc:
+      "Dieses interaktive Werkzeug hilft Ihnen dabei, den Lebenszyklus und Fluss von Variablen in XML-Workflow-Definitionen von OpenText Operations Orchestration (OO) zu analysieren. Laden Sie einfach Ihre XML-Datei hoch, um globale Startparameter, Ausführungsschritte und Variablen-Zuweisungen im Detail nachzuverfolgen.",
+    homeTooltip: "Zurück zur Startseite",
     dropZone: "XML-Workflow-Datei hierher ziehen oder anklicken, um zu laden",
     themeToggleTooltip: "Theme wechseln (Hell/Dunkel)",
     refreshWorkflow: "Workflow neu laden",
@@ -74,7 +81,7 @@ export const i18n = {
     stepColTransitions: "Übergänge",
 
     // HILFSTEXTE & BADGES
-    noInputs: "Keine Eingabewerte für diesen Schritt.",
+    noInputs: "Keine Eingabewerte für dieser Schritt.",
     noAssignments: "Keine Variablenzuweisungen in diesem Schritt.",
     endOfPath: "Ende des Pfads",
     unknown: "Unbekannt",
@@ -86,6 +93,10 @@ export const i18n = {
   en: {
     // GENERAL
     title: "OO Workflow Variable Tracer",
+    welcomeTitle: "Welcome to the OO Workflow Variable Tracer!",
+    welcomeDesc:
+      "This interactive tool helps you analyze the lifecycle and flow of variables in XML workflow definitions from OpenText Operations Orchestration (OO). Simply upload your XML file to trace global start parameters, execution steps, and variable assignments in detail.",
+    homeTooltip: "Back to home page",
     dropZone: "Drag & drop XML workflow file here or click to browse",
     themeToggleTooltip: "Toggle Theme (Light/Dark)",
     refreshWorkflow: "Refresh Workflow",
