@@ -4,7 +4,7 @@ import { useWorkflow } from "../context/WorkflowContext";
 /**
  * A component that displays a table of all global variables in the workflow,
  * including where they are created and used. It allows filtering and interaction.
- * All elements are aligned to the top (align-top & items-start).
+ * This version uses a separated header and body for a robust sticky header effect.
  * @returns {JSX.Element | null} The rendered VariableRegistry component or null if no data is available.
  */
 const VariableRegistry = () => {
@@ -61,6 +61,7 @@ const VariableRegistry = () => {
 
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm flex flex-col">
+      {/* Component Header */}
       <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3 mb-3">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
           {t.registryTitle}
@@ -69,48 +70,53 @@ const VariableRegistry = () => {
           {filteredVars.length} {t.variablesCount}
         </span>
       </div>
-      <div className="max-h-72 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-        <table className="w-full text-xs border-collapse table-fixed">
-          <thead className="sticky top-0 bg-slate-100 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300 backdrop-blur-sm z-10">
-            <tr>
-              <th className="w-1/4 p-2.5 text-left font-semibold border-b border-slate-200 dark:border-slate-700 align-top">
-                {t.registryColVar}
-              </th>
-              <th className="w-[37.5%] p-2.5 text-left font-semibold border-b border-slate-200 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 align-top">
-                {t.registryColCreated}
-              </th>
-              <th className="w-[37.5%] p-2.5 text-left font-semibold border-b border-slate-200 dark:border-slate-700 text-amber-600 dark:text-amber-400 align-top">
-                {t.registryColUsed}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-            {filteredVars.map(([name, info]) => {
-              const isActive = activeVar === name;
-              return (
-                <tr
-                  key={name}
-                  className={`cursor-pointer transition-colors ${
-                    isActive
-                      ? "bg-blue-50 dark:bg-blue-950/50 border-l-4 border-l-blue-600"
-                      : "hover:bg-slate-50 dark:hover:bg-slate-700/40"
-                  }`}
-                  onClick={() => onSelectVar(name, true)}
-                >
-                  <td className="p-2.5 align-top font-bold font-mono text-amber-600 dark:text-amber-400 break-words hover:underline">
-                    <code>{name}</code>
-                  </td>
-                  <td className="p-2.5 align-top">
-                    {renderStepTiles(info.createdIn, "created")}
-                  </td>
-                  <td className="p-2.5 align-top">
-                    {renderStepTiles(info.usedIn, "used")}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+
+      {/* Table Structure */}
+      <div className="border border-slate-200 dark:border-slate-700 rounded-lg">
+        {/* Static Table Header */}
+        <div className="flex bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-t-lg">
+          <div className="w-1/4 p-2.5 text-left font-semibold align-top">
+            {t.registryColVar}
+          </div>
+          <div className="w-[37.5%] p-2.5 text-left font-semibold text-emerald-600 dark:text-emerald-400 align-top">
+            {t.registryColCreated}
+          </div>
+          <div className="w-[37.5%] p-2.5 text-left font-semibold text-amber-600 dark:text-amber-400 align-top">
+            {t.registryColUsed}
+          </div>
+        </div>
+
+        {/* Scrollable Table Body */}
+        <div className="max-h-64 overflow-y-auto">
+          <table className="w-full text-xs border-collapse table-fixed">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              {filteredVars.map(([name, info]) => {
+                const isActive = activeVar === name;
+                return (
+                  <tr
+                    key={name}
+                    className={`cursor-pointer transition-colors ${
+                      isActive
+                        ? "bg-blue-50 dark:bg-blue-950/50"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-700/40"
+                    }`}
+                    onClick={() => onSelectVar(name, true)}
+                  >
+                    <td className="w-1/4 p-2.5 align-top font-bold font-mono text-amber-600 dark:text-amber-400 break-words hover:underline">
+                      <code>{name}</code>
+                    </td>
+                    <td className="w-[37.5%] p-2.5 align-top">
+                      {renderStepTiles(info.createdIn, "created")}
+                    </td>
+                    <td className="w-[37.5%] p-2.5 align-top">
+                      {renderStepTiles(info.usedIn, "used")}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
