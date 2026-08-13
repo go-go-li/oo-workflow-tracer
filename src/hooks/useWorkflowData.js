@@ -18,6 +18,7 @@ import { i18n } from "../i18n/translations";
  * @property {(e: React.MouseEvent, targetId: string) => void} onNodeClick - Function to handle clicks on step nodes/links.
  * @property {() => void} toggleLang - Function to toggle the language.
  * @property {() => void} resetWorkflow - Function to reset the application to its initial state.
+ * @property {() => void} loadAnotherWorkflow - Function to programmatically trigger the file explorer window.
  */
 
 /**
@@ -103,6 +104,17 @@ export const useWorkflowData = () => {
     onClear();
   }, [onClear]);
 
+  /**
+   * Programmatically clicks the hidden file input element in the DOM to trigger
+   * the native file selector directly without having to return to the landing screen first.
+   */
+  const loadAnotherWorkflow = useCallback(() => {
+    const fileInput = document.getElementById("file-input");
+    if (fileInput) {
+      fileInput.click();
+    }
+  }, []);
+
   const onNodeClick = useCallback((e, targetId) => {
     e.preventDefault();
     const element = document.getElementById(targetId);
@@ -148,5 +160,6 @@ export const useWorkflowData = () => {
     onNodeClick,
     toggleLang,
     resetWorkflow,
+    loadAnotherWorkflow,
   };
 };

@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
  * A React component for toggling between light and dark themes.
  * It utilizes the native View Transitions API, when available, to provide smooth,
  * GPU-accelerated theme transitions, preventing DOM style recalculation lag.
+ * Handles rapid state changes gracefully by catching aborted transition promises.
+ *
  * @param {object} props - The component props.
  * @param {string} props.tooltip - The tooltip text for the toggle button.
  * @returns {JSX.Element} The rendered ThemeToggle component.
@@ -33,9 +35,14 @@ const ThemeToggle = ({ tooltip }) => {
 
     // Use the modern, GPU-accelerated View Transitions API for an instant 60fps crossfade.
     if (document.startViewTransition) {
-      document.startViewTransition(() => {
+      const transition = document.startViewTransition(() => {
         applyTheme();
       });
+
+      // Prevent "Uncaught (in promise) AbortError: Transition was skipped"
+      // by catching the promise rejections when transitions are aborted or double-triggered.
+      transition.ready.catch(() => {});
+      transition.finished.catch(() => {});
     } else {
       applyTheme();
     }
