@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/* Manual dark mode toggle via the .dark class on the documentElement. */
+@variant dark (&:where(.dark, .dark *));
+
+/* Set the default color context for the browser. */
+html {
+  color-scheme: light dark;
+}
+
+/* NO global transitions here anymore! This is now handled by the View Transitions API. */
+
+@layer utilities {
+  /* Pulsating red glow for active variables. */
+  @keyframes pulse-red {
+    0% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+    }
+    70% {
+      box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+  }
+
+  .animate-pulse-red {
+    animation: pulse-red 1.5s infinite;
+  }
+
+  /* Hides scrollbars in horizontal tab bars. */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Ensure good scrollbar visibility. */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.5);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.8);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(203, 213, 225, 0.75);
+}
