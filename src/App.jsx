@@ -75,7 +75,8 @@ const WorkflowDashboard = () => {
  * @returns {JSX.Element} The rendered AppHeader component.
  */
 const AppHeader = () => {
-  const { t, toggleLang, lang, workflowData, resetWorkflow } = useWorkflow();
+  const { t, toggleLang, lang, workflowData, resetWorkflow, handleRefresh } =
+    useWorkflow();
 
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-6 border-b border-slate-200 dark:border-slate-700 gap-4 min-w-0 w-full">
@@ -84,13 +85,23 @@ const AppHeader = () => {
       </h2>
       <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
         {workflowData && (
-          <button
-            onClick={resetWorkflow}
-            className="h-9 px-3 rounded-lg bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 transition-all text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer shrink-0"
-            title={t.loadAnotherWorkflow}
-          >
-            🔄 <span>{t.loadAnotherWorkflow}</span>
-          </button>
+          <>
+            <button
+              onClick={handleRefresh}
+              className="h-9 w-9 rounded-lg bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 transition-all text-lg font-semibold inline-flex items-center justify-center cursor-pointer shrink-0"
+              title={t.refreshWorkflow}
+            >
+              🔃
+            </button>
+            <button
+              onClick={resetWorkflow}
+              className="h-9 px-3 rounded-lg bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 transition-all text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer shrink-0"
+              title={t.loadAnotherWorkflow}
+            >
+              📂{" "}
+              <span className="hidden sm:inline">{t.loadAnotherWorkflow}</span>
+            </button>
+          </>
         )}
         <ThemeToggle tooltip={t.themeToggleTooltip} />
         <button
