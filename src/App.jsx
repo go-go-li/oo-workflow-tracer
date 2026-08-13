@@ -127,18 +127,18 @@ function App() {
           <AppHeader />
         </header>
         <WorkflowDashboard />
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className={`fixed bottom-6 right-6 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl flex items-center justify-center shadow-lg transition-all duration-300 cursor-pointer ${
-            showScrollBtn
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-95 pointer-events-none"
-          }`}
-          aria-label="Back to top"
-        >
-          ↑
-        </button>
       </div>
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className={`fixed bottom-6 right-6 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl flex items-center justify-center shadow-lg transition-all duration-300 cursor-pointer ${
+          showScrollBtn
+            ? "opacity-100 scale-100"
+            : "opacity-0 scale-95 pointer-events-none"
+        }`}
+        aria-label="Back to top"
+      >
+        ↑
+      </button>
     </div>
   );
 }
