@@ -1,83 +1,46 @@
 import { useState, useMemo, useCallback } from "react";
-import { parseXMLWorkflow } from "../utils/ooParser";
 import { i18n } from "../i18n/translations";
 
-/**
- * @typedef {object} WorkflowDataHook
- * @property {string} lang - The current language ('de' or 'en').
- * @property {object} t - The translation object for the current language.
- * @property {object|null} workflowData - The parsed workflow data object.
- * @property {string|null} activeVar - The currently selected variable for detailed analysis.
- * @property {string} searchTerm - The current search term from the input field.
- * @property {string|null} highlightedStepId - The ID of the step to be highlighted.
- * @property {Array<object>} visibleSteps - The steps to be displayed, filtered by the search term.
- * @property {(file: File) => void} handleFileUpload - Function to process an uploaded file.
- * @property {() => void} handleRefresh - Function to re-process the current file.
- * @property {(varName: string, exact: boolean) => void} onSelectVar - Function to handle variable selection.
- * @property {() => void} onClear - Function to clear the current search and selection.
- * @property {(e: React.MouseEvent, targetId: string) => void} onNodeClick - Function to handle clicks on step nodes/links.
- * @property {() => void} toggleLang - Function to toggle the language.
- * @property {() => void} resetWorkflow - Function to reset the application to its initial state.
- * @property {() => void} loadAnotherWorkflow - Function to programmatically trigger the file explorer window.
- */
-
-/**
- * A custom hook that encapsulates all the business logic and state management
- * for the workflow analysis dashboard.
- *
- * @returns {WorkflowDataHook} An object containing the state and action dispatchers.
- */
 export const useWorkflowData = () => {
   const [lang, setLang] = useState("de");
   const [workflowData, setWorkflowData] = useState(null);
   const [activeVar, setActiveVar] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [highlightedStepId, setHighlightedStepId] = useState(null);
-  const [sourceFile, setSourceFile] = useState(null); // Store the uploaded file
+  // Das "sourceFile" State wird nicht mehr benötigt und wurde entfernt.
 
   const t = i18n[lang];
 
-  /**
-   * Processes the text content of a workflow file.
-   * @param {string} text - The XML content as a string.
-   */
-  const processWorkflowText = (text) => {
-    try {
-      const parsed = parseXMLWorkflow(text);
-      setWorkflowData(parsed);
-    } catch (error) {
-      console.error("Fehler beim Parsen der XML-Datei:", error);
-      alert(
-        "Die XML-Datei konnte nicht verarbeitet werden. Bitte prüfen Sie die Konsole für Details.",
-      );
-    }
-  };
+  const handleFileUpload = useCallback(async (file) => {
+    if (!file) return;
 
-  const handleFileUpload = useCallback((file) => {
-    if (file) {
-      setSourceFile(file); // Save the file object
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        processWorkflowText(event.target.result);
-        // Reset state on new file upload
-        setActiveVar(null);
-        setSearchTerm("");
-        setHighlightedStepId(null);
-      };
-      reader.readAsText(file);
+    // Das Speichern der Quelldatei ist nicht mehr nötig.
+    // setSourceFile(file);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/parse-workflow", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || `Serverfehler: ${response.statusText}`);
+      }
+      setWorkflowData(result);
+      setActiveVar(null);
+      setSearchTerm("");
+      setHighlightedStepId(null);
+    } catch (error) {
+      console.error("Fehler beim Verarbeiten der Workflow-Datei:", error);
+      alert(`Die Datei konnte nicht verarbeitet werden: ${error.message}`);
+      setWorkflowData(null);
     }
   }, []);
 
-  const handleRefresh = useCallback(() => {
-    if (sourceFile) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        // Only update workflow data, keep filters
-        processWorkflowText(event.target.result);
-      };
-      reader.readAsText(sourceFile);
-    }
-  }, [sourceFile]);
+  // Die "handleRefresh" Funktion wurde komplett entfernt.
 
   const onSelectVar = useCallback((varName, exact = true) => {
     setSearchTerm(varName);
@@ -95,24 +58,15 @@ export const useWorkflowData = () => {
     setHighlightedStepId(null);
   }, []);
 
-  /**
-   * Resets the entire workflow state, allowing a new file to be uploaded.
-   */
   const resetWorkflow = useCallback(() => {
     setWorkflowData(null);
-    setSourceFile(null);
+    // setSourceFile(null); // Nicht mehr nötig
     onClear();
   }, [onClear]);
 
-  /**
-   * Programmatically clicks the hidden file input element in the DOM to trigger
-   * the native file selector directly without having to return to the landing screen first.
-   */
   const loadAnotherWorkflow = useCallback(() => {
     const fileInput = document.getElementById("file-input");
-    if (fileInput) {
-      fileInput.click();
-    }
+    if (fileInput) fileInput.click();
   }, []);
 
   const onNodeClick = useCallback((e, targetId) => {
@@ -132,7 +86,6 @@ export const useWorkflowData = () => {
   const visibleSteps = useMemo(() => {
     if (!workflowData) return [];
     if (!searchTerm) return workflowData.steps;
-
     const termLower = searchTerm.toLowerCase();
     return workflowData.steps.filter((step) => {
       const createsVar = step.creates.some((v) =>
@@ -154,7 +107,7 @@ export const useWorkflowData = () => {
     highlightedStepId,
     visibleSteps,
     handleFileUpload,
-    handleRefresh,
+    // handleRefresh, // aus dem Return-Objekt entfernt
     onSelectVar,
     onClear,
     onNodeClick,
