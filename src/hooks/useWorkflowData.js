@@ -7,40 +7,36 @@ export const useWorkflowData = () => {
   const [activeVar, setActiveVar] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [highlightedStepId, setHighlightedStepId] = useState(null);
-  // Das "sourceFile" State wird nicht mehr benötigt und wurde entfernt.
 
   const t = i18n[lang];
 
   const handleFileUpload = useCallback(async (file) => {
     if (!file) return;
-
-    // Das Speichern der Quelldatei ist nicht mehr nötig.
-    // setSourceFile(file);
-
+    setWorkflowData(null);
+    setActiveVar(null);
+    setSearchTerm("");
+    setHighlightedStepId(null);
     const formData = new FormData();
     formData.append("file", file);
-
     try {
       const response = await fetch("/api/parse-workflow", {
         method: "POST",
         body: formData,
       });
-      const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.error || `Serverfehler: ${response.statusText}`);
+        const errorResult = await response
+          .json()
+          .catch(() => ({ error: `Serverfehler: ${response.statusText}` }));
+        throw new Error(errorResult.error);
       }
+      const result = await response.json();
       setWorkflowData(result);
-      setActiveVar(null);
-      setSearchTerm("");
-      setHighlightedStepId(null);
     } catch (error) {
-      console.error("Fehler beim Verarbeiten der Workflow-Datei:", error);
-      alert(`Die Datei konnte nicht verarbeitet werden: ${error.message}`);
+      console.error("Fehler:", error);
+      alert(`Fehler: ${error.message}`);
       setWorkflowData(null);
     }
   }, []);
-
-  // Die "handleRefresh" Funktion wurde komplett entfernt.
 
   const onSelectVar = useCallback((varName, exact = true) => {
     setSearchTerm(varName);
@@ -55,48 +51,45 @@ export const useWorkflowData = () => {
   const onClear = useCallback(() => {
     setActiveVar(null);
     setSearchTerm("");
-    setHighlightedStepId(null);
   }, []);
 
   const resetWorkflow = useCallback(() => {
     setWorkflowData(null);
-    // setSourceFile(null); // Nicht mehr nötig
     onClear();
+    setHighlightedStepId(null);
   }, [onClear]);
 
   const loadAnotherWorkflow = useCallback(() => {
-    const fileInput = document.getElementById("file-input");
-    if (fileInput) fileInput.click();
+    document.getElementById("file-input")?.click();
   }, []);
 
   const onNodeClick = useCallback((e, targetId) => {
     e.preventDefault();
     const element = document.getElementById(targetId);
-    if (element) {
-      setHighlightedStepId(targetId);
+    if (element)
       element.scrollIntoView({ behavior: "smooth", block: "center" });
-      window.history.pushState(null, null, `#${targetId}`);
-    }
   }, []);
 
-  const toggleLang = useCallback(() => {
-    setLang((l) => (l === "de" ? "en" : "de"));
-  }, []);
+  const toggleLang = useCallback(
+    () => setLang((l) => (l === "de" ? "en" : "de")),
+    [],
+  );
 
   const visibleSteps = useMemo(() => {
     if (!workflowData) return [];
-    if (!searchTerm) return workflowData.steps;
-    const termLower = searchTerm.toLowerCase();
-    return workflowData.steps.filter((step) => {
-      const createsVar = step.creates.some((v) =>
-        v.toLowerCase().includes(termLower),
-      );
-      const usesVar = step.uses.some((v) =>
-        v.toLowerCase().includes(termLower),
-      );
-      return createsVar || usesVar;
-    });
-  }, [workflowData, searchTerm]);
+    if (!activeVar) return workflowData.steps;
+    const termLower = activeVar.toLowerCase();
+    return workflowData.steps.filter(
+      (step) =>
+        step.creates.some((v) => v.toLowerCase().includes(termLower)) ||
+        step.uses.some((v) => v.toLowerCase().includes(termLower)),
+    );
+  }, [workflowData, activeVar]);
+
+  const allVars = useMemo(
+    () => (workflowData ? Object.keys(workflowData.globalVars) : []),
+    [workflowData],
+  );
 
   return {
     lang,
@@ -107,12 +100,12 @@ export const useWorkflowData = () => {
     highlightedStepId,
     visibleSteps,
     handleFileUpload,
-    // handleRefresh, // aus dem Return-Objekt entfernt
     onSelectVar,
     onClear,
     onNodeClick,
     toggleLang,
     resetWorkflow,
     loadAnotherWorkflow,
+    allVars,
   };
 };
