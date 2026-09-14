@@ -12,12 +12,15 @@ export const useWorkflowData = () => {
 
   const handleFileUpload = useCallback(async (file) => {
     if (!file) return;
+
     setWorkflowData(null);
     setActiveVar(null);
     setSearchTerm("");
     setHighlightedStepId(null);
+
     const formData = new FormData();
     formData.append("file", file);
+
     try {
       const response = await fetch("/api/parse-workflow", {
         method: "POST",
@@ -33,7 +36,7 @@ export const useWorkflowData = () => {
       setWorkflowData(result);
     } catch (error) {
       console.error("Fehler:", error);
-      alert(`Fehler: ${error.message}`);
+      alert(`Die Datei konnte nicht verarbeitet werden: ${error.message}`);
       setWorkflowData(null);
     }
   }, []);
@@ -75,16 +78,33 @@ export const useWorkflowData = () => {
     [],
   );
 
+  // =========================================================================
+  // HIER IST DIE ÄNDERUNG: Korrigierte Filterlogik für `visibleSteps`
+  // =========================================================================
   const visibleSteps = useMemo(() => {
     if (!workflowData) return [];
-    if (!activeVar) return workflowData.steps;
-    const termLower = activeVar.toLowerCase();
-    return workflowData.steps.filter(
-      (step) =>
-        step.creates.some((v) => v.toLowerCase().includes(termLower)) ||
-        step.uses.some((v) => v.toLowerCase().includes(termLower)),
-    );
-  }, [workflowData, activeVar]);
+
+    // Priorität hat die exakte Auswahl. Wenn `activeVar` gesetzt ist, filtere exakt danach.
+    const filterTerm = activeVar || searchTerm;
+
+    // Wenn es keinen Filterbegriff gibt, zeige alle Schritte.
+    if (!filterTerm) return workflowData.steps;
+
+    const termLower = filterTerm.toLowerCase();
+
+    return workflowData.steps.filter((step) => {
+      // Wenn eine exakte Variable ausgewählt ist (`activeVar`), suchen wir nach einer exakten Übereinstimmung.
+      // Ansonsten (nur `searchTerm`), suchen wir nach einer Teilübereinstimmung.
+      const check = activeVar
+        ? (v) => v.toLowerCase() === termLower
+        : (v) => v.toLowerCase().includes(termLower);
+
+      const createsVar = step.creates.some(check);
+      const usesVar = step.uses.some(check);
+
+      return createsVar || usesVar;
+    });
+  }, [workflowData, activeVar, searchTerm]); // Abhängigkeiten sind jetzt korrekt
 
   const allVars = useMemo(
     () => (workflowData ? Object.keys(workflowData.globalVars) : []),
