@@ -1,45 +1,3 @@
-/**
- * @typedef {object} TranslationKeys
- * @property {string} title
- * @property {string} welcomeTitle
- * @property {string} welcomeDesc
- * @property {string} homeTooltip
- * @property {string} dropZone
- * @property {string} themeToggleTooltip
- * @property {string} refreshWorkflow
- * @property {string} loadAnotherWorkflow
- * @property {string} searchTitle
- * @property {string} searchDesc
- * @property {string} searchPlaceholder
- * @property {string} registryTitle
- * @property {string} registryColVar
- * @property {string} registryColCreated
- * @property {string} registryColUsed
- * @property {string} variablesCount
- * @property {string} quickNavTitle
- * @property {string} flowInputsTitle
- * @property {string} flowInputsNone
- * @property {string} startParam
- * @property {string} executionStepsTitle
- * @property {string} stepColInputs
- * @property {string} stepColAssignments
- * @property {string} stepColTransitions
- * @property {string} noInputs
- * @property {string} noAssignments
- * @property {string} endOfPath
- * @property {string} unknown
- * @property {string} createdWord
- * @property {string} scriptletLabel
- * @property {string} stepScriptletLabel
- * @property {string} filtersLabel
- */
-
-/**
- * Internationalization (i18n) object containing translation strings
- * for German ('de') and English ('en').
- *
- * @type {{ de: TranslationKeys, en: TranslationKeys }}
- */
 export const i18n = {
   de: {
     // ALLGEMEIN
@@ -89,6 +47,14 @@ export const i18n = {
     scriptletLabel: "Scriptlet",
     stepScriptletLabel: "Schritt-Scriptlet (nach Ausführung)",
     filtersLabel: "Filter",
+
+    // ZUWEISUNGSQUELLEN (NEU)
+    fromScriptlet: "Aus Ausdruck/Skriptlet",
+    fromInput: "aus Schritt-Eingabe",
+    fromResult: "aus Schritt-Ergebnis",
+    fromBroadcast: "Zuweisung (Broadcast)",
+    fromKeyNames: "Zuweisung via keyNames",
+    filtersApplied: "Filter angewendet",
   },
   en: {
     // GENERAL
@@ -138,5 +104,13 @@ export const i18n = {
     scriptletLabel: "Scriptlet",
     stepScriptletLabel: "Step-Level Scriptlet (Post-Execution)",
     filtersLabel: "Filters",
+
+    // ASSIGNMENT SOURCES (NEW)
+    fromScriptlet: "From Expression/Scriptlet",
+    fromInput: "from Step Input",
+    fromResult: "from Step Result",
+    fromBroadcast: "Assignment (Broadcast)",
+    fromKeyNames: "Assignment via keyNames",
+    filtersApplied: "Filters applied",
   },
 };

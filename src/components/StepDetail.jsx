@@ -146,7 +146,7 @@ const StepDetail = ({ step }) => {
                       />
                       <span className="text-slate-400 font-bold">&larr;</span>{" "}
                       <TokenizedValue
-                        value={ass.value}
+                        value={ass.value || ass.sourceDetail}
                         onVariableClick={onSelectVar}
                         allVars={allVars}
                         activeVar={activeVar}
@@ -154,13 +154,15 @@ const StepDetail = ({ step }) => {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 pt-2">
-                      <span className="font-semibold">{ass.source}</span>
+                      <span className="font-semibold">
+                        {t[ass.sourceKey] || ass.sourceKey}
+                      </span>
                       {ass.filterCount > 0 && (
                         <span
                           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/60 text-cyan-700 dark:text-cyan-300 text-[10px] font-bold"
-                          title={`${ass.filterCount} Filter angewendet`}
+                          title={`${ass.filterCount} ${t.filtersApplied || "Filter angewendet"}`}
                         >
-                          🧪 {ass.filterCount} Filter
+                          🧪 {ass.filterCount}
                         </span>
                       )}
                     </div>
