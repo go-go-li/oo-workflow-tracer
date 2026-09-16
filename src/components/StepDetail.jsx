@@ -32,10 +32,6 @@ const StepDetail = ({ step }) => {
   if (usesVar) borderLeftColor = "border-l-amber-500 dark:border-l-amber-400";
   if (isTarget) borderLeftColor = "border-l-blue-600 dark:border-l-blue-500";
 
-  const handleVariableClick = (varName) => {
-    onSelectVar(varName, true);
-  };
-
   return (
     <div
       id={step.id}
@@ -116,7 +112,7 @@ const StepDetail = ({ step }) => {
                     :{" "}
                     <TokenizedValue
                       value={inp.value}
-                      onVariableClick={handleVariableClick}
+                      onVariableClick={onSelectVar}
                       allVars={allVars}
                       activeVar={activeVar}
                     />
@@ -130,6 +126,7 @@ const StepDetail = ({ step }) => {
             )}
           </div>
         )}
+
         {activeTab === "assignments" && (
           <div>
             {step.assignments.length > 0 ? (
@@ -137,28 +134,36 @@ const StepDetail = ({ step }) => {
                 {step.assignments.map((ass, idx) => (
                   <li
                     key={idx}
-                    className="relative bg-white dark:bg-slate-800 p-2.5 sm:p-3 rounded-md border border-slate-200 dark:border-slate-700 break-all"
+                    className="relative bg-white dark:bg-slate-800 p-3 rounded-md border border-slate-200 dark:border-slate-700 break-all flex flex-col gap-2"
                   >
-                    <span className="text-slate-500">{t.createdWord}:</span>{" "}
-                    <TokenizedValue
-                      value={ass.variable}
-                      onVariableClick={onSelectVar}
-                      allVars={allVars}
-                      activeVar={activeVar}
-                      isKey={true}
-                    />
-                    &larr;{" "}
-                    <TokenizedValue
-                      value={ass.value}
-                      onVariableClick={onSelectVar}
-                      allVars={allVars}
-                      activeVar={activeVar}
-                    />
-                    {ass.source && (
-                      <span className="block mt-1 text-[0.68rem] sm:text-[0.7rem] text-slate-400 italic break-all">
-                        {ass.source}
-                      </span>
-                    )}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <TokenizedValue
+                        value={ass.variable}
+                        onVariableClick={onSelectVar}
+                        allVars={allVars}
+                        activeVar={activeVar}
+                        isKey={true}
+                      />
+                      <span className="text-slate-400 font-bold">&larr;</span>{" "}
+                      <TokenizedValue
+                        value={ass.value}
+                        onVariableClick={onSelectVar}
+                        allVars={allVars}
+                        activeVar={activeVar}
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 pt-2">
+                      <span className="font-semibold">{ass.source}</span>
+                      {ass.filterCount > 0 && (
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/60 text-cyan-700 dark:text-cyan-300 text-[10px] font-bold"
+                          title={`${ass.filterCount} Filter angewendet`}
+                        >
+                          🧪 {ass.filterCount} Filter
+                        </span>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -169,6 +174,7 @@ const StepDetail = ({ step }) => {
             )}
           </div>
         )}
+
         {activeTab === "transitions" && (
           <div>
             {step.transitions.length > 0 ? (
@@ -186,13 +192,9 @@ const StepDetail = ({ step }) => {
                     </span>
                     <a
                       href={`#${trans.destId}`}
-                      onClick={(e) => {
-                        if (onNodeClick) {
-                          onNodeClick(e, trans.destId);
-                        }
-                      }}
+                      onClick={(e) => onNodeClick(e, trans.destId)}
                       className="inline-flex items-center px-2 py-1 rounded text-[0.72rem] font-medium bg-slate-100 dark:bg-slate-700/60 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600 border-l-4 border-l-slate-400 dark:border-l-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all hover:-translate-y-0.5 cursor-pointer break-all"
-                      title={`Jump to step "${trans.destName}"`}
+                      title={`Zum Schritt springen: "${trans.destName}"`}
                     >
                       {trans.destName}
                     </a>
@@ -207,13 +209,6 @@ const StepDetail = ({ step }) => {
           </div>
         )}
       </div>
-      {step.stepScriptlet && (
-        <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-200 dark:border-slate-700">
-          <span className="inline-flex items-center px-2 py-1 rounded text-[0.7rem] sm:text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 break-all">
-            📜 Step Scriptlet: {step.stepScriptlet.name}
-          </span>
-        </div>
-      )}
     </div>
   );
 };
