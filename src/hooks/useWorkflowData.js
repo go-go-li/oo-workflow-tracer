@@ -1,18 +1,20 @@
 import { useState, useMemo, useCallback } from "react";
-import { i18n } from "../i18n/translations";
+import { i18n } from "../i18n/translations"; // WICHTIG: Der Import für die Übersetzungen
 
 export const useWorkflowData = () => {
+  // *** HIER IST DIE KORREKTUR: Die Übersetzungs-Hooks sind wieder da ***
   const [lang, setLang] = useState("de");
+  const t = i18n[lang];
+
   const [workflowData, setWorkflowData] = useState(null);
   const [activeVar, setActiveVar] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [highlightedStepId, setHighlightedStepId] = useState(null);
 
-  const t = i18n[lang];
-
   const handleFileUpload = useCallback(async (file) => {
     if (!file) return;
 
+    // Reset state before new upload
     setWorkflowData(null);
     setActiveVar(null);
     setSearchTerm("");
@@ -26,18 +28,17 @@ export const useWorkflowData = () => {
         method: "POST",
         body: formData,
       });
-      if (!response.ok) {
-        const errorResult = await response
-          .json()
-          .catch(() => ({ error: `Serverfehler: ${response.statusText}` }));
-        throw new Error(errorResult.error);
-      }
+
       const result = await response.json();
+      if (!response.ok || result.error) {
+        throw new Error(result.error || `Serverfehler: ${response.statusText}`);
+      }
+
       setWorkflowData(result);
     } catch (error) {
       console.error("Fehler:", error);
       alert(`Die Datei konnte nicht verarbeitet werden: ${error.message}`);
-      setWorkflowData(null);
+      setWorkflowData(null); // Ensure data is cleared on error
     }
   }, []);
 
@@ -69,51 +70,49 @@ export const useWorkflowData = () => {
   const onNodeClick = useCallback((e, targetId) => {
     e.preventDefault();
     const element = document.getElementById(targetId);
-    if (element)
+    if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   }, []);
 
+  // *** HIER IST DIE KORREKTUR: Der Sprachumschalter ist wieder da ***
   const toggleLang = useCallback(
     () => setLang((l) => (l === "de" ? "en" : "de")),
     [],
   );
 
-  // =========================================================================
-  // HIER IST DIE ÄNDERUNG: Korrigierte Filterlogik für `visibleSteps`
-  // =========================================================================
   const visibleSteps = useMemo(() => {
-    if (!workflowData) return [];
+    if (!workflowData || !workflowData.steps) return [];
 
-    // Priorität hat die exakte Auswahl. Wenn `activeVar` gesetzt ist, filtere exakt danach.
     const filterTerm = activeVar || searchTerm;
-
-    // Wenn es keinen Filterbegriff gibt, zeige alle Schritte.
     if (!filterTerm) return workflowData.steps;
 
     const termLower = filterTerm.toLowerCase();
 
     return workflowData.steps.filter((step) => {
-      // Wenn eine exakte Variable ausgewählt ist (`activeVar`), suchen wir nach einer exakten Übereinstimmung.
-      // Ansonsten (nur `searchTerm`), suchen wir nach einer Teilübereinstimmung.
       const check = activeVar
         ? (v) => v.toLowerCase() === termLower
         : (v) => v.toLowerCase().includes(termLower);
 
-      const createsVar = step.creates.some(check);
-      const usesVar = step.uses.some(check);
+      const createsVar = step.creates?.some(check);
+      const usesVar = step.uses?.some(check);
 
       return createsVar || usesVar;
     });
-  }, [workflowData, activeVar, searchTerm]); // Abhängigkeiten sind jetzt korrekt
+  }, [workflowData, activeVar, searchTerm]);
 
+  // *** HIER IST DIE KORREKTUR: Der Code ist nun gegen 'undefined' abgesichert ***
   const allVars = useMemo(
-    () => (workflowData ? Object.keys(workflowData.globalVars) : []),
+    () =>
+      workflowData && workflowData.globalVars
+        ? Object.keys(workflowData.globalVars)
+        : [],
     [workflowData],
   );
 
   return {
     lang,
-    t,
+    t, // Das `t`-Objekt wird wieder exportiert
     workflowData,
     activeVar,
     searchTerm,
@@ -123,7 +122,7 @@ export const useWorkflowData = () => {
     onSelectVar,
     onClear,
     onNodeClick,
-    toggleLang,
+    toggleLang, // Der Sprachumschalter wird wieder exportiert
     resetWorkflow,
     loadAnotherWorkflow,
     allVars,
