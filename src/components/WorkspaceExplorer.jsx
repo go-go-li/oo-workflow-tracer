@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useWorkflow } from "../context/WorkflowContext";
 
 const TreeItem = ({
@@ -9,6 +9,20 @@ const TreeItem = ({
   openFolders,
 }) => {
   const isDirectory = item.kind === "directory";
+  const itemRef = useRef(null);
+
+  // Präziser Pfadabgleich
+  const isActive = activePath === item.path || activePath === item.name;
+
+  // Automatisches Scrollen im Explorer-Baum zum aktiven Item
+  useEffect(() => {
+    if (isActive && itemRef.current) {
+      itemRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [isActive]);
 
   if (isDirectory) {
     const isOpen = openFolders.has(item.path);
@@ -24,15 +38,13 @@ const TreeItem = ({
           }
         >
           <span
-            className={`mr-1.5 text-xs text-slate-500 transform transition-transform duration-150 flex-shrink-0 ${isOpen ? "rotate-90" : ""}`}
+            className={`mr-1.5 text-xs text-slate-500 transform transition-transform duration-150 flex-shrink-0 ${
+              isOpen ? "rotate-90" : ""
+            }`}
           >
             ▶
           </span>
           <span className="mr-1.5 flex-shrink-0">{isOpen ? "📂" : "📁"}</span>
-
-          {/* ================================================================ */}
-          {/* HIER IST DIE KORREKTUR: Kein truncate, kein Umbruch             */}
-          {/* ================================================================ */}
           <span
             className="font-semibold text-sm select-none whitespace-nowrap"
             title={item.name}
@@ -59,13 +71,13 @@ const TreeItem = ({
     );
   }
 
-  const isActive = activePath === item.name;
   const displayName = item.name.endsWith(".xml")
     ? item.name.slice(0, -4)
     : item.name;
 
   return (
     <div
+      ref={itemRef}
       className={`ml-4 my-0.5 pl-5 pr-2 py-1.5 rounded cursor-pointer text-sm flex items-center ${
         isActive
           ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold"
@@ -75,20 +87,24 @@ const TreeItem = ({
       title={item.name}
     >
       <span className="mr-1.5 text-slate-500 flex-shrink-0">📄</span>
-      {/* ================================================================ */}
-      {/* HIER IST DIE KORREKTUR: Kein truncate, kein Umbruch             */}
-      {/* ================================================================ */}
       <span className="select-none whitespace-nowrap">{displayName}</span>
     </div>
   );
 };
 
-// Der Rest der Datei bleibt unverändert.
 const WorkspaceExplorer = () => {
-  const { workspace, handleWorkflowSelect, activeWorkflowPath, t } =
-    useWorkflow();
+  const {
+    workspace,
+    handleWorkflowSelect,
+    activeWorkflowPath,
+    t,
+    folderToExpand,
+    setFolderToExpand,
+    explorerSearchTerm,
+    setExplorerSearchTerm,
+  } = useWorkflow();
+
   const [openFolders, setOpenFolders] = useState(new Set());
-  const [searchTerm, setSearchTerm] = useState("");
 
   const filterTree = (nodes, term) => {
     if (!term) return nodes;
@@ -123,8 +139,8 @@ const WorkspaceExplorer = () => {
 
   const filteredTree = useMemo(() => {
     if (!workspace) return [];
-    return filterTree(workspace.children, searchTerm);
-  }, [workspace, searchTerm]);
+    return filterTree(workspace.children, explorerSearchTerm);
+  }, [workspace, explorerSearchTerm]);
 
   const handleToggleFolder = (folderPath) => {
     setOpenFolders((prevOpenFolders) => {
@@ -139,18 +155,37 @@ const WorkspaceExplorer = () => {
   };
 
   useEffect(() => {
-    if (searchTerm) {
+    if (explorerSearchTerm) {
       setOpenFolders(getAllFolderPaths(filteredTree));
     } else {
       setOpenFolders(new Set());
     }
-  }, [searchTerm, filteredTree]);
+  }, [explorerSearchTerm, filteredTree]);
+
+  // Effekt zum automatischen Öffnen der Pfade, wenn folderToExpand sich ändert
+  useEffect(() => {
+    if (folderToExpand) {
+      setOpenFolders((prevOpenFolders) => {
+        const newOpenFolders = new Set(prevOpenFolders);
+        const pathParts = folderToExpand.split("/");
+
+        for (let i = 1; i <= pathParts.length; i++) {
+          newOpenFolders.add(pathParts.slice(0, i).join("/"));
+        }
+        return newOpenFolders;
+      });
+
+      if (setFolderToExpand) {
+        setFolderToExpand(null);
+      }
+    }
+  }, [folderToExpand, setFolderToExpand]);
 
   if (!workspace) return null;
 
   return (
     <div
-      className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm min-w-0 flex flex-col p-4 
+      className="bg-slate-550 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm min-w-0 flex flex-col p-4 
                    resize-y overflow-auto h-[50vh] min-h-[250px] max-h-[85vh]"
     >
       <div className="flex-shrink-0">
@@ -165,14 +200,14 @@ const WorkspaceExplorer = () => {
         <div className="relative mb-3">
           <input
             type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={explorerSearchTerm}
+            onChange={(e) => setExplorerSearchTerm(e.target.value)}
             placeholder={t.filterTreePlaceholder || "Workflows filtern..."}
             className="w-full px-3 py-1.5 bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-600 rounded-md text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
-          {searchTerm && (
+          {explorerSearchTerm && (
             <button
-              onClick={() => setSearchTerm("")}
+              onClick={() => setExplorerSearchTerm("")}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-base leading-none p-1 cursor-pointer"
               title={t.clearFilterTooltip || "Filter löschen"}
             >
@@ -182,9 +217,6 @@ const WorkspaceExplorer = () => {
         </div>
       </div>
 
-      {/* ================================================================ */}
-      {/* HIER IST DIE KORREKTUR: overflow-x-auto für horizontales Scrollen */}
-      {/* ================================================================ */}
       <div className="flex-grow space-y-1 pr-1 overflow-y-auto overflow-x-auto">
         {filteredTree.length > 0 ? (
           filteredTree.map((item) => (

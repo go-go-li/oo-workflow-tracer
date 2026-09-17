@@ -32,7 +32,11 @@ const AppHeader = () => {
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-6 border-b border-slate-200 dark:border-slate-700 gap-4 min-w-0 w-full">
       <h2
         onClick={workspace ? resetWorkspace : null}
-        className={`text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 select-none ${workspace ? "cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors" : "cursor-default"}`}
+        className={`text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 select-none ${
+          workspace
+            ? "cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            : "cursor-default"
+        }`}
         title={workspace ? t.homeTooltip : ""}
       >
         {t.title}
@@ -66,7 +70,7 @@ const WorkflowDashboard = () => {
     t,
     isLoading,
     usageData,
-    handleWorkflowSelect,
+    onUsageItemClick,
   } = useWorkflow();
   const [activeTab, setActiveTab] = useState("usage");
 
@@ -85,7 +89,6 @@ const WorkflowDashboard = () => {
   );
 
   if (isLoading && !workflowData) {
-    // Zeige nur den Lade-Spinner, wenn noch gar keine Daten da sind
     return (
       <div className="flex items-center justify-center h-full bg-slate-50 dark:bg-slate-800/50 border-2 border-dashed rounded-xl text-slate-500 p-8 font-semibold">
         {t.loadingText}
@@ -139,7 +142,7 @@ const WorkflowDashboard = () => {
                 {usageData.map((item) => (
                   <li
                     key={item.id}
-                    onClick={() => handleWorkflowSelect(item.file)}
+                    onClick={() => onUsageItemClick(item.file)}
                     className="flex items-center gap-2 p-2.5 rounded-md cursor-pointer bg-slate-50 dark:bg-slate-900/50 hover:bg-blue-50 dark:hover:bg-blue-950/60 border border-slate-200 dark:border-slate-700 transition-colors"
                   >
                     <span className="text-slate-500">📄</span>
@@ -216,12 +219,13 @@ function App() {
   const onDirectoryUpload = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       handleWorkspaceUpload(e.target.files);
-      e.target.value = null;
+      e.target.value = null; // Wichtig, damit derselbe Ordner erneut ausgewählt werden kann
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 p-2.5 sm:p-6 lg:p-8">
+      {/* Das Input-Feld muss auf der obersten Ebene sein, damit die Labels funktionieren */}
       <input
         type="file"
         id="directory-input"
@@ -235,22 +239,28 @@ function App() {
         <header>
           <AppHeader />
         </header>
-        {workspace ? (
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(250px,25%)_1fr] gap-6 min-w-0">
-            <aside className="min-w-0">
-              <WorkspaceExplorer />
-            </aside>
-            <main className="min-w-0">
-              <WorkflowDashboard />
-            </main>
-          </div>
-        ) : (
-          <WelcomeScreen />
-        )}
+        <main>
+          {workspace ? (
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(250px,25%)_1fr] gap-6 min-w-0">
+              <aside className="min-w-0">
+                <WorkspaceExplorer />
+              </aside>
+              <main className="min-w-0">
+                <WorkflowDashboard />
+              </main>
+            </div>
+          ) : (
+            <WelcomeScreen />
+          )}
+        </main>
       </div>
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className={`fixed bottom-6 right-6 w-11 h-11 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-300 cursor-pointer ${showScrollBtn ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}
+        className={`fixed bottom-6 right-6 w-11 h-11 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-300 cursor-pointer ${
+          showScrollBtn
+            ? "opacity-100 scale-100"
+            : "opacity-0 scale-95 pointer-events-none"
+        }`}
         aria-label="Back to top"
       >
         ↑

@@ -50,23 +50,14 @@ const buildTreeFromFileList = (fileList) => {
   return { name: workspaceName, children: root.children };
 };
 
-// =========================================================================
-//  HIER IST DIE FINALE, KORRIGIERTE PARSING-LOGIK
-// =========================================================================
 const parseXmlForIndex = async (file) => {
   const text = await file.text();
-
-  // Neuer Regex: Sucht nach <flow id="..."> ODER <operation id="...">
-  // Und ignoriert dabei optionale Namespace-Präfixe.
   const idMatch = text.match(
     /<(?:(?:\w+:)?flow|(?:\w+:)?operation)\s+id="([^"]+)"/,
   );
   const id = idMatch ? idMatch[1].trim().toLowerCase() : null;
-
-  // Der Rest der Funktion bleibt gleich
   const nameMatch = text.match(/<name>([^<]+)<\/name>/);
   const name = nameMatch ? nameMatch[1] : file.name;
-
   const refIdRegex = /<(?:\w+:)?refId>([^<]+)<\/(?:\w+:)?refId>/g;
   const references = [];
   let match;
@@ -84,19 +75,19 @@ export const useWorkflowData = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [usageIndex, setUsageIndex] = useState(null);
   const [usageData, setUsageData] = useState([]);
-
   const [workflowData, setWorkflowData] = useState(null);
   const [activeWorkflowPath, setActiveWorkflowPath] = useState(null);
   const [activeVar, setActiveVar] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
   const [highlightedStepId, setHighlightedStepId] = useState(null);
+  const [folderToExpand, setFolderToExpand] = useState(null);
+
+  // ZENTRALISIERUNG: Der Explorer-Filterzustand wird jetzt hier verwaltet.
+  const [explorerSearchTerm, setExplorerSearchTerm] = useState("");
 
   const parseAndSetWorkflow = useCallback(async (file) => {
     setIsLoading(true);
     setWorkflowData(null);
     setActiveVar(null);
-    setSearchTerm("");
-    setHighlightedStepId(null);
     const formData = new FormData();
     formData.append("file", file);
     try {
@@ -124,7 +115,6 @@ export const useWorkflowData = () => {
       setWorkflowData(null);
       setUsageIndex(null);
       setUsageData([]);
-
       try {
         const tree = buildTreeFromFileList(fileList);
         if (!tree || tree.children.length === 0) {
@@ -132,14 +122,11 @@ export const useWorkflowData = () => {
           setIsLoading(false);
           return;
         }
-
         setWorkspace(tree);
-
         const files = Array.from(fileList).filter((f) =>
           f.name.endsWith(".xml"),
         );
         const parsedFiles = await Promise.all(files.map(parseXmlForIndex));
-
         const newIndex = new Map();
         for (const p of parsedFiles) {
           if (p.id) {
@@ -164,19 +151,19 @@ export const useWorkflowData = () => {
   const handleWorkflowSelect = useCallback(
     async (file) => {
       if (!file) return;
-      setActiveWorkflowPath(file.name);
-
+      setActiveWorkflowPath(file.webkitRelativePath);
+      // Setzt den zu erweiternden Ordner zurück, wenn direkt im Baum geklickt wird
+      setFolderToExpand(null);
       parseAndSetWorkflow(file);
 
       if (usageIndex) {
         let selectedId = null;
         for (const [id, data] of usageIndex.entries()) {
-          if (data.file === file) {
+          if (data.file.webkitRelativePath === file.webkitRelativePath) {
             selectedId = id;
             break;
           }
         }
-
         if (selectedId) {
           const usedIn = [];
           for (const [id, data] of usageIndex.entries()) {
@@ -193,8 +180,22 @@ export const useWorkflowData = () => {
     [parseAndSetWorkflow, usageIndex],
   );
 
+  const onUsageItemClick = useCallback(
+    (file) => {
+      // KORREKTUR: Setzt den zentralen Filterzustand direkt zurück.
+      setExplorerSearchTerm("");
+
+      handleWorkflowSelect(file);
+      const pathParts = file.webkitRelativePath.split("/");
+      if (pathParts.length > 1) {
+        const parentFolderPath = pathParts.slice(0, -1).join("/");
+        setFolderToExpand(parentFolderPath);
+      }
+    },
+    [handleWorkflowSelect],
+  );
+
   const onSelectVar = useCallback((varName, exact = true) => {
-    setSearchTerm(varName);
     if (exact) {
       setActiveVar(varName);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -207,11 +208,12 @@ export const useWorkflowData = () => {
     setWorkspace(null);
     setWorkflowData(null);
     setActiveVar(null);
-    setSearchTerm("");
+    setExplorerSearchTerm("");
     setHighlightedStepId(null);
     setActiveWorkflowPath(null);
     setUsageIndex(null);
     setUsageData([]);
+    setFolderToExpand(null);
   }, []);
 
   const onNodeClick = useCallback((e, targetId) => {
@@ -229,16 +231,14 @@ export const useWorkflowData = () => {
 
   const visibleSteps = useMemo(() => {
     if (!workflowData?.steps) return [];
-    const filterTerm = activeVar || searchTerm;
+    const filterTerm = activeVar;
     if (!filterTerm) return workflowData.steps;
     const termLower = filterTerm.toLowerCase();
     return workflowData.steps.filter((step) => {
-      const check = activeVar
-        ? (v) => v.toLowerCase() === termLower
-        : (v) => v.toLowerCase().includes(termLower);
+      const check = (v) => v.toLowerCase() === termLower;
       return step.creates?.some(check) || step.uses?.some(check);
     });
-  }, [workflowData, activeVar, searchTerm]);
+  }, [workflowData, activeVar]);
 
   const allVars = useMemo(
     () =>
@@ -251,7 +251,7 @@ export const useWorkflowData = () => {
     t,
     workflowData,
     activeVar,
-    searchTerm,
+    searchTerm: activeVar,
     highlightedStepId,
     visibleSteps,
     onSelectVar,
@@ -265,5 +265,11 @@ export const useWorkflowData = () => {
     handleWorkflowSelect,
     resetWorkspace,
     usageData,
+    onUsageItemClick,
+    folderToExpand,
+    setFolderToExpand,
+    // Export des zentralen Filterzustands und seines Setters
+    explorerSearchTerm,
+    setExplorerSearchTerm,
   };
 };
