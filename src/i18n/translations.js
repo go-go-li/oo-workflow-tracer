@@ -4,12 +4,24 @@ export const i18n = {
     title: "OO Workflow Variable Tracer",
     welcomeTitle: "Willkommen beim OO Workflow Variable Tracer!",
     welcomeDesc:
-      "Dieses interaktive Werkzeug hilft Ihnen dabei, den Lebenszyklus und Fluss von Variablen in XML-Workflow-Definitionen von OpenText Operations Orchestration (OO) zu analysieren. Laden Sie einfach Ihre XML-Datei hoch, um globale Startparameter, Ausführungsschritte und Variablen-Zuweisungen im Detail nachzuverfolgen.",
-    homeTooltip: "Zurück zur Startseite",
-    dropZone: "XML-Workflow-Datei hierher ziehen oder anklicken, um zu laden",
+      "Dieses interaktive Werkzeug hilft Ihnen dabei, den Lebenszyklus und Fluss von Variablen in XML-Workflow-Definitionen von OpenText Operations Orchestration (OO) zu analysieren. Wählen Sie einen Workspace oder laden Sie eine einzelne XML-Datei hoch, um zu starten.",
+    homeTooltip: "Startbildschirm (Workspace zurücksetzen)",
     themeToggleTooltip: "Theme wechseln (Hell/Dunkel)",
-    refreshWorkflow: "Workflow neu laden",
-    loadAnotherWorkflow: "Anderen Workflow laden",
+
+    // UPLOAD / HEADER-BUTTONS
+    dropZoneWorkspace: "Workspace-Verzeichnis auswählen",
+    uploadSingleFile: "eine einzelne XML-Datei hochladen",
+    orText: "Oder",
+    loadNewWorkspace: "Neuer Workspace",
+    loadNewWorkspaceTooltip: "Neuen Workspace laden",
+    loadSingleFile: "Einzelne Datei",
+    loadSingleFileTooltip: "Einzelnen Workflow laden",
+
+    // WORKSPACE & DASHBOARD
+    workspaceEmpty: "Keine .xml-Dateien in diesem Verzeichnis gefunden.",
+    selectWorkflowPlaceholder:
+      "Wählen Sie einen Workflow aus dem Explorer, um die Analyse zu starten.",
+    loadingText: "Analysiere Workflow...",
 
     // SUCHE
     searchTitle: "Variablensuche und -Analyse",
@@ -23,9 +35,6 @@ export const i18n = {
     registryColCreated: "Erstellt in",
     registryColUsed: "Verwendet in",
     variablesCount: "Variablen",
-
-    // NAVIGATION
-    quickNavTitle: "Workflow-Navigation",
 
     // GLOBALE INPUTS
     flowInputsTitle: "Globale Startparameter",
@@ -48,7 +57,7 @@ export const i18n = {
     stepScriptletLabel: "Schritt-Scriptlet (nach Ausführung)",
     filtersLabel: "Filter",
 
-    // ZUWEISUNGSQUELLEN (NEU)
+    // ZUWEISUNGSQUELLEN
     fromScriptlet: "Aus Ausdruck/Skriptlet",
     fromInput: "aus Schritt-Eingabe",
     fromResult: "aus Schritt-Ergebnis",
@@ -61,12 +70,24 @@ export const i18n = {
     title: "OO Workflow Variable Tracer",
     welcomeTitle: "Welcome to the OO Workflow Variable Tracer!",
     welcomeDesc:
-      "This interactive tool helps you analyze the lifecycle and flow of variables in XML workflow definitions from OpenText Operations Orchestration (OO). Simply upload your XML file to trace global start parameters, execution steps, and variable assignments in detail.",
-    homeTooltip: "Back to home page",
-    dropZone: "Drag & drop XML workflow file here or click to browse",
+      "This interactive tool helps you analyze the lifecycle and flow of variables in OpenText Operations Orchestration (OO) XML workflows. Select a workspace directory or upload a single XML file to get started.",
+    homeTooltip: "Home Screen (Reset Workspace)",
     themeToggleTooltip: "Toggle Theme (Light/Dark)",
-    refreshWorkflow: "Refresh Workflow",
-    loadAnotherWorkflow: "Load Another Workflow",
+
+    // UPLOAD / HEADER BUTTONS
+    dropZoneWorkspace: "Select Workspace Directory",
+    uploadSingleFile: "upload a single XML file",
+    orText: "Or",
+    loadNewWorkspace: "New Workspace",
+    loadNewWorkspaceTooltip: "Load New Workspace",
+    loadSingleFile: "Single File",
+    loadSingleFileTooltip: "Load Single Workflow",
+
+    // WORKSPACE & DASHBOARD
+    workspaceEmpty: "No .xml files found in this directory.",
+    selectWorkflowPlaceholder:
+      "Select a workflow from the explorer to begin analysis.",
+    loadingText: "Analyzing workflow...",
 
     // SEARCH
     searchTitle: "Variable Search & Analysis",
@@ -80,9 +101,6 @@ export const i18n = {
     registryColCreated: "Created In",
     registryColUsed: "Used In",
     variablesCount: "Variables",
-
-    // NAVIGATION
-    quickNavTitle: "Workflow Navigation",
 
     // GLOBAL INPUTS
     flowInputsTitle: "Global Input Parameters",
@@ -105,7 +123,7 @@ export const i18n = {
     stepScriptletLabel: "Step-Level Scriptlet (Post-Execution)",
     filtersLabel: "Filters",
 
-    // ASSIGNMENT SOURCES (NEW)
+    // ASSIGNMENT SOURCES
     fromScriptlet: "From Expression/Scriptlet",
     fromInput: "from Step Input",
     fromResult: "from Step Result",
