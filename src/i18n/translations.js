@@ -17,14 +17,19 @@ export const i18n = {
     workspaceEmpty: "Keine .xml-Dateien in diesem Verzeichnis gefunden.",
     selectWorkflowPlaceholder:
       "Wählen Sie einen Workflow aus dem Explorer, um die Analyse zu starten.",
-    loadingText: "Analysiere Workflow...",
+    loadingText: "Analysiere Workspace & Index...",
     filterTreePlaceholder: "Workflows filtern...",
     clearFilterTooltip: "Filter löschen",
     filterNoResults: "Keine Workflows gefunden.",
 
-    // NEU: TABS
+    // TABS
     usageTab: "Usage",
     variablesTab: "Variables",
+    usageAnalysisTitle: "Verwendungsanalyse",
+    usageAnalysisDesc: "Der Workflow",
+    usageAnalysisDesc2: "wird in den folgenden Workflows verwendet:",
+    usageAnalysisNone:
+      "Wird in keinem anderen Workflow in diesem Workspace verwendet.",
 
     // SUCHE
     searchTitle: "Variablensuche und -Analyse",
@@ -72,14 +77,18 @@ export const i18n = {
     workspaceEmpty: "No .xml files found in this directory.",
     selectWorkflowPlaceholder:
       "Select a workflow from the explorer to begin analysis.",
-    loadingText: "Analyzing workflow...",
+    loadingText: "Analyzing Workspace & Index...",
     filterTreePlaceholder: "Filter workflows...",
     clearFilterTooltip: "Clear filter",
     filterNoResults: "No workflows found.",
 
-    // NEW: TABS
+    // TABS
     usageTab: "Usage",
     variablesTab: "Variables",
+    usageAnalysisTitle: "Usage Analysis",
+    usageAnalysisDesc: "The workflow",
+    usageAnalysisDesc2: "is used in the following workflows:",
+    usageAnalysisNone: "Not used in any other workflow in this workspace.",
 
     // SEARCH
     searchTitle: "Variable Search & Analysis",

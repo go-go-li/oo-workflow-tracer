@@ -50,20 +50,48 @@ const buildTreeFromFileList = (fileList) => {
   return { name: workspaceName, children: root.children };
 };
 
+// =========================================================================
+//  HIER IST DIE FINALE, KORRIGIERTE PARSING-LOGIK
+// =========================================================================
+const parseXmlForIndex = async (file) => {
+  const text = await file.text();
+
+  // Neuer Regex: Sucht nach <flow id="..."> ODER <operation id="...">
+  // Und ignoriert dabei optionale Namespace-Präfixe.
+  const idMatch = text.match(
+    /<(?:(?:\w+:)?flow|(?:\w+:)?operation)\s+id="([^"]+)"/,
+  );
+  const id = idMatch ? idMatch[1].trim().toLowerCase() : null;
+
+  // Der Rest der Funktion bleibt gleich
+  const nameMatch = text.match(/<name>([^<]+)<\/name>/);
+  const name = nameMatch ? nameMatch[1] : file.name;
+
+  const refIdRegex = /<(?:\w+:)?refId>([^<]+)<\/(?:\w+:)?refId>/g;
+  const references = [];
+  let match;
+  while ((match = refIdRegex.exec(text)) !== null) {
+    references.push(match[1].trim().toLowerCase());
+  }
+  return { id, name, file, references };
+};
+
 export const useWorkflowData = () => {
   const [lang, setLang] = useState("de");
   const t = i18n[lang];
 
   const [workspace, setWorkspace] = useState(null);
-  const [activeWorkflowPath, setActiveWorkflowPath] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [usageIndex, setUsageIndex] = useState(null);
+  const [usageData, setUsageData] = useState([]);
+
   const [workflowData, setWorkflowData] = useState(null);
+  const [activeWorkflowPath, setActiveWorkflowPath] = useState(null);
   const [activeVar, setActiveVar] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [highlightedStepId, setHighlightedStepId] = useState(null);
 
   const parseAndSetWorkflow = useCallback(async (file) => {
-    if (!file) return;
     setIsLoading(true);
     setWorkflowData(null);
     setActiveVar(null);
@@ -81,8 +109,8 @@ export const useWorkflowData = () => {
         throw new Error(result.error || `Server Error: ${response.statusText}`);
       setWorkflowData(result);
     } catch (error) {
-      console.error("Fehler bei der Dateiverarbeitung:", error);
-      alert(`Die Datei konnte nicht verarbeitet werden: ${error.message}`);
+      console.error("Fehler bei der Workflow-Analyse:", error);
+      alert(`Die Datei konnte nicht analysiert werden: ${error.message}`);
       setWorkflowData(null);
     } finally {
       setIsLoading(false);
@@ -90,23 +118,42 @@ export const useWorkflowData = () => {
   }, []);
 
   const handleWorkspaceUpload = useCallback(
-    (fileList) => {
+    async (fileList) => {
       setIsLoading(true);
       setWorkspace(null);
       setWorkflowData(null);
+      setUsageIndex(null);
+      setUsageData([]);
+
       try {
         const tree = buildTreeFromFileList(fileList);
-        if (tree && tree.children.length > 0) {
-          setWorkspace(tree);
-        } else {
-          alert(
-            t.workspaceEmpty ||
-              "Keine .xml-Dateien in diesem Verzeichnis gefunden.",
-          );
+        if (!tree || tree.children.length === 0) {
+          alert(t.workspaceEmpty);
+          setIsLoading(false);
+          return;
         }
+
+        setWorkspace(tree);
+
+        const files = Array.from(fileList).filter((f) =>
+          f.name.endsWith(".xml"),
+        );
+        const parsedFiles = await Promise.all(files.map(parseXmlForIndex));
+
+        const newIndex = new Map();
+        for (const p of parsedFiles) {
+          if (p.id) {
+            newIndex.set(p.id, {
+              name: p.name,
+              file: p.file,
+              references: p.references,
+            });
+          }
+        }
+        setUsageIndex(newIndex);
       } catch (error) {
-        console.error("Fehler beim Erstellen des Workspace-Baums:", error);
-        alert("Der Workspace konnte nicht geladen werden.");
+        console.error("Fehler beim Erstellen des Workspace-Index:", error);
+        alert("Der Workspace-Index konnte nicht erstellt werden.");
       } finally {
         setIsLoading(false);
       }
@@ -118,9 +165,32 @@ export const useWorkflowData = () => {
     async (file) => {
       if (!file) return;
       setActiveWorkflowPath(file.name);
-      await parseAndSetWorkflow(file);
+
+      parseAndSetWorkflow(file);
+
+      if (usageIndex) {
+        let selectedId = null;
+        for (const [id, data] of usageIndex.entries()) {
+          if (data.file === file) {
+            selectedId = id;
+            break;
+          }
+        }
+
+        if (selectedId) {
+          const usedIn = [];
+          for (const [id, data] of usageIndex.entries()) {
+            if (data.references.includes(selectedId)) {
+              usedIn.push({ id, name: data.name, file: data.file });
+            }
+          }
+          setUsageData(usedIn);
+        } else {
+          setUsageData([]);
+        }
+      }
     },
-    [parseAndSetWorkflow],
+    [parseAndSetWorkflow, usageIndex],
   );
 
   const onSelectVar = useCallback((varName, exact = true) => {
@@ -140,6 +210,8 @@ export const useWorkflowData = () => {
     setSearchTerm("");
     setHighlightedStepId(null);
     setActiveWorkflowPath(null);
+    setUsageIndex(null);
+    setUsageData([]);
   }, []);
 
   const onNodeClick = useCallback((e, targetId) => {
@@ -192,5 +264,6 @@ export const useWorkflowData = () => {
     handleWorkspaceUpload,
     handleWorkflowSelect,
     resetWorkspace,
+    usageData,
   };
 };

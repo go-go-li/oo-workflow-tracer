@@ -7,10 +7,6 @@ import ThemeToggle from "./components/ThemeToggle";
 import FileDropZone from "./components/FileDropZone";
 import WorkspaceExplorer from "./components/WorkspaceExplorer";
 
-// =========================================================================
-//  Sub-Komponenten (WelcomeScreen und AppHeader sind unverändert)
-// =========================================================================
-
 const WelcomeScreen = () => {
   const { t } = useWorkflow();
   return (
@@ -63,14 +59,16 @@ const AppHeader = () => {
   );
 };
 
-// =========================================================================
-//  WorkflowDashboard: HIER IST DIE NEUE TAB-STRUKTUR
-// =========================================================================
-
 const WorkflowDashboard = () => {
-  const { workflowData, visibleSteps, t, isLoading } = useWorkflow();
-  // Standard-Tab ist jetzt 'variables'
-  const [activeTab, setActiveTab] = useState("variables");
+  const {
+    workflowData,
+    visibleSteps,
+    t,
+    isLoading,
+    usageData,
+    handleWorkflowSelect,
+  } = useWorkflow();
+  const [activeTab, setActiveTab] = useState("usage");
 
   const TabButton = ({ tabName, currentTab, onClick, children }) => (
     <button
@@ -86,7 +84,8 @@ const WorkflowDashboard = () => {
     </button>
   );
 
-  if (isLoading) {
+  if (isLoading && !workflowData) {
+    // Zeige nur den Lade-Spinner, wenn noch gar keine Daten da sind
     return (
       <div className="flex items-center justify-center h-full bg-slate-50 dark:bg-slate-800/50 border-2 border-dashed rounded-xl text-slate-500 p-8 font-semibold">
         {t.loadingText}
@@ -104,7 +103,6 @@ const WorkflowDashboard = () => {
 
   return (
     <div id="result-area" className="min-w-0 w-full overflow-hidden">
-      {/* Tab-Navigation */}
       <div className="border-b border-slate-200 dark:border-slate-700 mb-6">
         <TabButton
           tabName="usage"
@@ -122,20 +120,47 @@ const WorkflowDashboard = () => {
         </TabButton>
       </div>
 
-      {/* Tab-Inhalt */}
       {activeTab === "usage" && (
-        <div className="animate-fade-in">
-          {/* Dieser Tab ist vorerst leer */}
-          <div className="flex items-center justify-center h-64 bg-slate-50 dark:bg-slate-800/50 border-2 border-dashed rounded-xl text-slate-500 p-8">
-            {t.usageTabPlaceholder ||
-              "Dieser Bereich ist für zukünftige Analysen vorgesehen."}
+        <div className="space-y-4 animate-fade-in">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+            {t.usageAnalysisTitle || "Verwendungsanalyse"}
+          </h3>
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 sm:p-5 shadow-sm">
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+              {t.usageAnalysisDesc || `Der Workflow`}{" "}
+              <code className="font-semibold text-xs bg-slate-200 dark:bg-slate-700 px-1.5 py-1 rounded">
+                {workflowData.flowName}
+              </code>{" "}
+              {t.usageAnalysisDesc2 ||
+                `wird in den folgenden Workflows verwendet:`}
+            </p>
+            {usageData.length > 0 ? (
+              <ul className="space-y-2">
+                {usageData.map((item) => (
+                  <li
+                    key={item.id}
+                    onClick={() => handleWorkflowSelect(item.file)}
+                    className="flex items-center gap-2 p-2.5 rounded-md cursor-pointer bg-slate-50 dark:bg-slate-900/50 hover:bg-blue-50 dark:hover:bg-blue-950/60 border border-slate-200 dark:border-slate-700 transition-colors"
+                  >
+                    <span className="text-slate-500">📄</span>
+                    <span className="font-mono text-sm text-blue-600 dark:text-blue-400">
+                      {item.name}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-slate-500 italic py-4">
+                {t.usageAnalysisNone ||
+                  "Wird in keinem anderen Workflow in diesem Workspace verwendet."}
+              </p>
+            )}
           </div>
         </div>
       )}
 
       {activeTab === "variables" && (
         <div className="space-y-6 animate-fade-in">
-          {/* Die gesamte bisherige Ansicht wird hierher verschoben */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <VariableSearch />
             <VariableRegistry />
@@ -177,10 +202,6 @@ const WorkflowDashboard = () => {
     </div>
   );
 };
-
-// =========================================================================
-//  Haupt-App-Komponente (unverändert)
-// =========================================================================
 
 function App() {
   const { workspace, handleWorkspaceUpload } = useWorkflow();
