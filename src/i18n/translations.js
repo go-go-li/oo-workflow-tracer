@@ -22,6 +22,10 @@ export const i18n = {
     clearFilterTooltip: "Filter löschen",
     filterNoResults: "Keine Workflows gefunden.",
 
+    // NEU: TABS
+    usageTab: "Usage",
+    variablesTab: "Variables",
+
     // SUCHE
     searchTitle: "Variablensuche und -Analyse",
     searchDesc:
@@ -72,6 +76,10 @@ export const i18n = {
     filterTreePlaceholder: "Filter workflows...",
     clearFilterTooltip: "Clear filter",
     filterNoResults: "No workflows found.",
+
+    // NEW: TABS
+    usageTab: "Usage",
+    variablesTab: "Variables",
 
     // SEARCH
     searchTitle: "Variable Search & Analysis",
