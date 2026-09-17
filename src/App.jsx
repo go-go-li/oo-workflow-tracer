@@ -8,7 +8,7 @@ import FileDropZone from "./components/FileDropZone";
 import WorkspaceExplorer from "./components/WorkspaceExplorer";
 
 // =========================================================================
-//  Sub-Komponenten, die in App.jsx leben
+//  Sub-Komponenten
 // =========================================================================
 
 const WelcomeScreen = () => {
@@ -29,49 +29,35 @@ const WelcomeScreen = () => {
 };
 
 const AppHeader = () => {
+  // HIER DIE ÄNDERUNG: Wir holen uns `workspace` aus dem Context
   const { t, toggleLang, lang, resetWorkspace, workspace } = useWorkflow();
 
   const handleLoadWorkspace = () => {
     document.getElementById("directory-input")?.click();
   };
 
-  const handleLoadSingleFile = () => {
-    document.getElementById("file-input")?.click();
-  };
-
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-6 border-b border-slate-200 dark:border-slate-700 gap-4 min-w-0 w-full">
       <h2
-        onClick={resetWorkspace}
-        className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors select-none"
-        title={t.homeTooltip}
+        onClick={workspace ? resetWorkspace : null} // Klickbar nur wenn Workspace da ist
+        className={`text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 select-none ${workspace ? "cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors" : "cursor-default"}`}
+        title={workspace ? t.homeTooltip : ""}
       >
         {t.title}
       </h2>
       <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+        {/* HIER DIE ÄNDERUNG: Der Button wird nur gerendert, wenn `workspace` existiert */}
         {workspace && (
-          <>
-            <button
-              onClick={handleLoadWorkspace}
-              className="h-9 px-3 rounded-lg bg-blue-50 dark:bg-blue-800/60 text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-800 border border-blue-300 dark:border-blue-700 transition-all text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
-              title={t.loadNewWorkspaceTooltip || "Neuen Workspace laden"}
-            >
-              🗂️{" "}
-              <span className="hidden sm:inline">
-                {t.loadNewWorkspace || "Neuer Workspace"}
-              </span>
-            </button>
-            <button
-              onClick={handleLoadSingleFile}
-              className="h-9 px-3 rounded-lg bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 transition-all text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
-              title={t.loadSingleFileTooltip || "Einzelnen Workflow laden"}
-            >
-              📄{" "}
-              <span className="hidden sm:inline">
-                {t.loadSingleFile || "Einzelne Datei"}
-              </span>
-            </button>
-          </>
+          <button
+            onClick={handleLoadWorkspace}
+            className="h-9 px-3 rounded-lg bg-blue-50 dark:bg-blue-800/60 text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-800 border border-blue-300 dark:border-blue-700 transition-all text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+            title={t.loadNewWorkspaceTooltip || "Neuen Workspace laden"}
+          >
+            🗂️{" "}
+            <span className="hidden sm:inline">
+              {t.loadNewWorkspace || "Neuer Workspace"}
+            </span>
+          </button>
         )}
 
         <ThemeToggle tooltip={t.themeToggleTooltip} />
@@ -114,9 +100,7 @@ const WorkflowDashboard = () => {
       </div>
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 sm:p-5 shadow-sm space-y-4 min-w-0 w-full overflow-hidden">
         <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-slate-100 break-all [overflow-wrap:anywhere] min-w-0">
-          <span className="text-slate-900 dark:text-slate-100 break-all">
-            {workflowData.flowName}
-          </span>
+          {workflowData.flowName}
         </h2>
         <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-slate-700 min-w-0 w-full overflow-hidden">
           <h3 className="text-xs sm:text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2">
@@ -158,8 +142,7 @@ const WorkflowDashboard = () => {
 // =========================================================================
 
 function App() {
-  const { workspace, workflowData, handleWorkspaceUpload, handleFileUpload } =
-    useWorkflow();
+  const { workspace, handleWorkspaceUpload } = useWorkflow();
   const [showScrollBtn, setShowScrollBtn] = useState(false);
 
   useEffect(() => {
@@ -175,17 +158,6 @@ function App() {
     }
   };
 
-  const onSingleFileUpload = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFileUpload(e.target.files[0]);
-      e.target.value = null;
-    }
-  };
-
-  const showSplitView = !!workspace;
-  const showSingleFileView = !workspace && !!workflowData;
-  const showWelcome = !workspace && !workflowData;
-
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 p-2.5 sm:p-6 lg:p-8">
       <input
@@ -197,22 +169,12 @@ function App() {
         multiple
         onChange={onDirectoryUpload}
       />
-      <input
-        type="file"
-        id="file-input"
-        className="sr-only"
-        accept=".xml"
-        onChange={onSingleFileUpload}
-      />
 
       <div className="max-w-7xl mx-auto bg-white dark:bg-slate-800/90 rounded-2xl p-4 sm:p-8 shadow-xl border border-slate-200/80 dark:border-slate-700/80">
         <header>
           <AppHeader />
         </header>
-
-        {showWelcome && <WelcomeScreen />}
-
-        {showSplitView && (
+        {workspace ? (
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(250px,25%)_1fr] gap-6 min-w-0">
             <aside className="min-w-0">
               <WorkspaceExplorer />
@@ -221,9 +183,9 @@ function App() {
               <WorkflowDashboard />
             </main>
           </div>
+        ) : (
+          <WelcomeScreen />
         )}
-
-        {showSingleFileView && <WorkflowDashboard />}
       </div>
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

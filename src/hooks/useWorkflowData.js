@@ -1,36 +1,25 @@
 import { useState, useMemo, useCallback } from "react";
 import { i18n } from "../i18n/translations";
 
-/**
- * Baut eine Baumstruktur aus einer flachen Dateiliste (FileList),
- * wie sie vom <input webkitdirectory> bereitgestellt wird.
- * @param {FileList} fileList - Die Liste der Dateien aus dem Verzeichnis.
- * @returns {object|null} - Ein Objekt mit dem Workspace-Namen und der Baumstruktur oder null.
- */
 const buildTreeFromFileList = (fileList) => {
   if (!fileList || fileList.length === 0) return null;
-
   const root = { children: [] };
   const firstPath = fileList[0]?.webkitRelativePath;
   const workspaceName = firstPath ? firstPath.split("/")[0] : "Workspace";
 
   for (const file of fileList) {
     if (!file.name.endsWith(".xml")) continue;
-
     const pathParts = file.webkitRelativePath.split("/");
     let currentNode = root;
-
     pathParts.forEach((part, index) => {
       if (index === pathParts.length - 1) {
-        // Es ist die Datei
         currentNode.children.push({
           kind: "file",
           name: part,
           path: file.webkitRelativePath,
-          handle: file, // `handle` ist jetzt das File-Objekt
+          handle: file,
         });
       } else {
-        // Es ist ein Ordner
         let childNode = currentNode.children.find(
           (child) => child.name === part && child.kind === "directory",
         );
@@ -47,8 +36,6 @@ const buildTreeFromFileList = (fileList) => {
       }
     });
   }
-
-  // Sortiere jede Ebene des Baums: Ordner zuerst, dann alphabetisch
   const sortTree = (node) => {
     if (!node.children) return;
     node.children.sort((a, b) => {
@@ -59,7 +46,6 @@ const buildTreeFromFileList = (fileList) => {
       if (child.kind === "directory") sortTree(child);
     });
   };
-
   sortTree(root);
   return { name: workspaceName, children: root.children };
 };
@@ -71,23 +57,20 @@ export const useWorkflowData = () => {
   const [workspace, setWorkspace] = useState(null);
   const [activeWorkflowPath, setActiveWorkflowPath] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
   const [workflowData, setWorkflowData] = useState(null);
   const [activeVar, setActiveVar] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [highlightedStepId, setHighlightedStepId] = useState(null);
 
-  const handleFileUpload = useCallback(async (file) => {
+  const parseAndSetWorkflow = useCallback(async (file) => {
     if (!file) return;
     setIsLoading(true);
     setWorkflowData(null);
     setActiveVar(null);
     setSearchTerm("");
     setHighlightedStepId(null);
-
     const formData = new FormData();
     formData.append("file", file);
-
     try {
       const response = await fetch("/api/parse-workflow", {
         method: "POST",
@@ -110,7 +93,7 @@ export const useWorkflowData = () => {
     (fileList) => {
       setIsLoading(true);
       setWorkspace(null);
-      resetWorkflow();
+      setWorkflowData(null);
       try {
         const tree = buildTreeFromFileList(fileList);
         if (tree && tree.children.length > 0) {
@@ -129,15 +112,15 @@ export const useWorkflowData = () => {
       }
     },
     [t],
-  ); // `t` als Abhängigkeit hinzufügen
+  );
 
   const handleWorkflowSelect = useCallback(
     async (file) => {
       if (!file) return;
       setActiveWorkflowPath(file.name);
-      await handleFileUpload(file);
+      await parseAndSetWorkflow(file);
     },
-    [handleFileUpload],
+    [parseAndSetWorkflow],
   );
 
   const onSelectVar = useCallback((varName, exact = true) => {
@@ -150,22 +133,14 @@ export const useWorkflowData = () => {
     }
   }, []);
 
-  const onClear = useCallback(() => {
-    setActiveVar(null);
-    setSearchTerm("");
-  }, []);
-
-  const resetWorkflow = useCallback(() => {
-    setWorkflowData(null);
-    onClear();
-    setHighlightedStepId(null);
-    setActiveWorkflowPath(null);
-  }, [onClear]);
-
   const resetWorkspace = useCallback(() => {
     setWorkspace(null);
-    resetWorkflow();
-  }, [resetWorkflow]);
+    setWorkflowData(null);
+    setActiveVar(null);
+    setSearchTerm("");
+    setHighlightedStepId(null);
+    setActiveWorkflowPath(null);
+  }, []);
 
   const onNodeClick = useCallback((e, targetId) => {
     e.preventDefault();
@@ -184,7 +159,6 @@ export const useWorkflowData = () => {
     if (!workflowData?.steps) return [];
     const filterTerm = activeVar || searchTerm;
     if (!filterTerm) return workflowData.steps;
-
     const termLower = filterTerm.toLowerCase();
     return workflowData.steps.filter((step) => {
       const check = activeVar
@@ -208,12 +182,9 @@ export const useWorkflowData = () => {
     searchTerm,
     highlightedStepId,
     visibleSteps,
-    handleFileUpload,
     onSelectVar,
-    onClear,
     onNodeClick,
     toggleLang,
-    resetWorkflow,
     allVars,
     isLoading,
     workspace,

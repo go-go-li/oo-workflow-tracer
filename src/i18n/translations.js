@@ -4,24 +4,23 @@ export const i18n = {
     title: "OO Workflow Variable Tracer",
     welcomeTitle: "Willkommen beim OO Workflow Variable Tracer!",
     welcomeDesc:
-      "Dieses interaktive Werkzeug hilft Ihnen dabei, den Lebenszyklus und Fluss von Variablen in XML-Workflow-Definitionen von OpenText Operations Orchestration (OO) zu analysieren. Wählen Sie einen Workspace oder laden Sie eine einzelne XML-Datei hoch, um zu starten.",
+      "Dieses interaktive Werkzeug hilft Ihnen, Variablen in OpenText Operations Orchestration (OO) Workflows zu analysieren. Wählen Sie einen Workspace, um zu starten.",
     homeTooltip: "Startbildschirm (Workspace zurücksetzen)",
     themeToggleTooltip: "Theme wechseln (Hell/Dunkel)",
 
     // UPLOAD / HEADER-BUTTONS
     dropZoneWorkspace: "Workspace-Verzeichnis auswählen",
-    uploadSingleFile: "eine einzelne XML-Datei hochladen",
-    orText: "Oder",
     loadNewWorkspace: "Neuer Workspace",
     loadNewWorkspaceTooltip: "Neuen Workspace laden",
-    loadSingleFile: "Einzelne Datei",
-    loadSingleFileTooltip: "Einzelnen Workflow laden",
 
     // WORKSPACE & DASHBOARD
     workspaceEmpty: "Keine .xml-Dateien in diesem Verzeichnis gefunden.",
     selectWorkflowPlaceholder:
       "Wählen Sie einen Workflow aus dem Explorer, um die Analyse zu starten.",
     loadingText: "Analysiere Workflow...",
+    filterTreePlaceholder: "Workflows filtern...",
+    clearFilterTooltip: "Filter löschen",
+    filterNoResults: "Keine Workflows gefunden.",
 
     // SUCHE
     searchTitle: "Variablensuche und -Analyse",
@@ -46,48 +45,33 @@ export const i18n = {
     stepColInputs: "Eingabewerte",
     stepColAssignments: "Variablen-Zuweisungen",
     stepColTransitions: "Übergänge",
-
-    // HILFSTEXTE & BADGES
     noInputs: "Keine Eingabewerte für dieser Schritt.",
     noAssignments: "Keine Variablenzuweisungen in diesem Schritt.",
     endOfPath: "Ende des Pfads",
     unknown: "Unbekannt",
-    createdWord: "Zuweisung",
-    scriptletLabel: "Scriptlet",
-    stepScriptletLabel: "Schritt-Scriptlet (nach Ausführung)",
-    filtersLabel: "Filter",
-
-    // ZUWEISUNGSQUELLEN
-    fromScriptlet: "Aus Ausdruck/Skriptlet",
-    fromInput: "aus Schritt-Eingabe",
-    fromResult: "aus Schritt-Ergebnis",
-    fromBroadcast: "Zuweisung (Broadcast)",
-    fromKeyNames: "Zuweisung via keyNames",
-    filtersApplied: "Filter angewendet",
   },
   en: {
     // GENERAL
     title: "OO Workflow Variable Tracer",
     welcomeTitle: "Welcome to the OO Workflow Variable Tracer!",
     welcomeDesc:
-      "This interactive tool helps you analyze the lifecycle and flow of variables in OpenText Operations Orchestration (OO) XML workflows. Select a workspace directory or upload a single XML file to get started.",
+      "This interactive tool helps you analyze variables in OpenText Operations Orchestration (OO) workflows. Select a workspace to get started.",
     homeTooltip: "Home Screen (Reset Workspace)",
     themeToggleTooltip: "Toggle Theme (Light/Dark)",
 
     // UPLOAD / HEADER BUTTONS
     dropZoneWorkspace: "Select Workspace Directory",
-    uploadSingleFile: "upload a single XML file",
-    orText: "Or",
     loadNewWorkspace: "New Workspace",
     loadNewWorkspaceTooltip: "Load New Workspace",
-    loadSingleFile: "Single File",
-    loadSingleFileTooltip: "Load Single Workflow",
 
     // WORKSPACE & DASHBOARD
     workspaceEmpty: "No .xml files found in this directory.",
     selectWorkflowPlaceholder:
       "Select a workflow from the explorer to begin analysis.",
     loadingText: "Analyzing workflow...",
+    filterTreePlaceholder: "Filter workflows...",
+    clearFilterTooltip: "Clear filter",
+    filterNoResults: "No workflows found.",
 
     // SEARCH
     searchTitle: "Variable Search & Analysis",
@@ -112,23 +96,9 @@ export const i18n = {
     stepColInputs: "Input Values",
     stepColAssignments: "Variable Assignments",
     stepColTransitions: "Transitions",
-
-    // HELPER TEXT & BADGES
     noInputs: "No inputs for this step.",
     noAssignments: "No variable assignments in this step.",
     endOfPath: "End of Path",
     unknown: "Unknown",
-    createdWord: "Assignment",
-    scriptletLabel: "Scriptlet",
-    stepScriptletLabel: "Step-Level Scriptlet (Post-Execution)",
-    filtersLabel: "Filters",
-
-    // ASSIGNMENT SOURCES
-    fromScriptlet: "From Expression/Scriptlet",
-    fromInput: "from Step Input",
-    fromResult: "from Step Result",
-    fromBroadcast: "Assignment (Broadcast)",
-    fromKeyNames: "Assignment via keyNames",
-    filtersApplied: "Filters applied",
   },
 };
